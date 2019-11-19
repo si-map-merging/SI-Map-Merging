@@ -5,6 +5,8 @@ Example usages:
 """
 
 import argparse
+import random
+import math
 
 
 class Node:
@@ -200,6 +202,27 @@ class MultiRobotGraph:
                                                     for x in self.lc]))
         print("# Inter loop closures: {}".format(len(self.inter_lc)))
 
+    def add_random_inter_lc(self, N=90):
+        """Add randomly generated inter loop closures
+        """
+        x_mu = random.uniform(-5, 5)
+        x_sigma = random.uniform(-2, 2)
+        y_mu = random.uniform(-5, 5)
+        y_sigma = random.uniform(-2, 2)
+        theta_mu = random.uniform(-math.pi, math.pi)
+        theta_sigma = random.uniform(-0.5, 0.5)
+
+        info = [1/x_sigma**2, 0, 0, 1/y_sigma**2, 0, 1/theta_sigma**2]
+
+        random_inter_lc = [Edge(random.choice(list(self.nodes[0])),
+                                random.choice(list(self.nodes[1])),
+                                random.normalvariate(x_mu, x_sigma),
+                                random.normalvariate(y_mu, y_sigma),
+                                random.normalvariate(theta_mu, theta_sigma),
+                                info)
+                           for _ in range(N)]
+        self.inter_lc += random_inter_lc
+
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -219,6 +242,10 @@ if __name__ == "__main__":
     graph.print_summary()
 
     multi_graph = graph.to_multi()
-    print("========== Output g2o Graph Summary ================")
+    print("========== Multi Robot g2o Graph Summary ================")
+    multi_graph.print_summary()
+
+    multi_graph.add_random_inter_lc()
+    print("========== Noisy Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
     multi_graph.write_to(args.output_fpath)
