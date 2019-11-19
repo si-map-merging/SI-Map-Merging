@@ -23,6 +23,12 @@ class Node:
         self.y = y
         self.theta = theta
 
+    def to_g2o(self):
+        """Return a string representing the node in g2o format
+        """
+        return "VERTEX_SE2 {} {} {} {}".format(self.id_, self.x, self.y,
+                                               self.theta)
+
 
 class Edge:
     """Edge of a 2D graph, representing a measurement between 2 nodes
@@ -43,6 +49,14 @@ class Edge:
         self.y = y
         self.theta = theta
         self.info = info
+
+    def to_g2o(self):
+        """Return a string representing the edge in g2o format
+        """
+        result = "EDGE_SE2 {} {} {} {} {} ".format(self.i, self.j, self.x, self.y,
+                                               self.theta)
+        result += " ".join([str(x) for x in self.info])
+        return result
 
 
 class SingleRobotGraph:
@@ -115,7 +129,7 @@ class SingleRobotGraph:
         multi_graph = MultiRobotGraph()
         multi_graph.read_nodes(self.nodes)
         multi_graph.read_edges(self.odom_edges, self.loop_closure_edges)
-        # TODO(Jay) complete this
+        return multi_graph
 
 class MultiRobotGraph:
     """Multi robot graph
@@ -123,31 +137,68 @@ class MultiRobotGraph:
     TODO(Jay) Currently assumes 2 robots in 2D, extend to many robots in 3D
 
     Attributes:
-        TODO(Jay)
+        N: number of robots
+        nodes: nodes for each robot
+        odoms: odometry edges for each robot
+        lc: loop closure edges for each robot
+        inter_lc: loop closure edges between robots
     """
 
     def __init__(self):
-        self.robot_a_nodes = {}
-        self.robot_b_nodes = {}
-        self.robot_a_odom = []
-        self.robot_a_odom = []
-        self.robot_a_lc = []
-        self.robot_a_lc = []
+        self.N = 2
+        self.nodes = [{} for _ in range(self.N)]
+        self.odoms = [[] for _ in range(self.N)]
+        self.lc = [[] for _ in range(self.N)]
+        self.inter_lc = []
 
     def read_nodes(self, nodes):
         """Split single robot nodes into nodes for 2 robots
         """
+        segment_len = len(nodes)//self.N
         for k, v in nodes.items():
-            if k < len(nodes)//2:
-                self.robot_a_nodes[k] = v
-            else:
-                self.robot_b_nodes[k] = v
+            idx = k // segment_len
+            assert(idx < self.N)
+            self.nodes[idx][k] = v
 
     def read_edges(self, odom_edges, loop_closure_edges):
         """Split single robot edges into edges for 2 robots
         """
-        pass # TODO(Jay) Complete this
+        for odom in odom_edges:
+            for idx, nodes in enumerate(self.nodes):
+                if odom.i in nodes or odom.j in nodes:
+                    self.odoms[idx].append(odom)
+                    break
 
+        for lc in loop_closure_edges:
+            is_self_lc = False
+            for idx, nodes in enumerate(self.nodes):
+                if lc.i in nodes and lc.j in nodes:
+                    self.lc[idx].append(lc)
+                    is_self_lc = True
+                    break
+            if not is_self_lc:
+                self.inter_lc.append(lc)
+
+    def write_to(self, fpath):
+        """Write graph to file
+        """
+        fp = open(fpath, "w+")
+        for nodes in self.nodes:
+            for node in nodes.values():
+                fp.write(node.to_g2o() + "\n")
+        for edges in self.odoms + self.lc + [self.inter_lc]:
+            for edge in edges:
+                fp.write(edge.to_g2o() + "\n")
+
+    def print_summary(self):
+        """Print summary of the multi robot graph
+        """
+        print("# Robots: {}".format(self.N))
+        print("# Nodes: " + " ".join([str(len(x)) for x in self.nodes]))
+        print("# Odoms: " + " ".join([str(len(x)) for x in self.odoms]))
+        print("# Inner loop closures: " + " ".join([str(len(x))
+                                                    for x in self.lc]))
+        print("# Inter loop closures: {}".format(len(self.inter_lc)))
 
 
 if __name__ == "__main__":
@@ -166,3 +217,8 @@ if __name__ == "__main__":
 
     print("========== Input g2o Graph Summary ================")
     graph.print_summary()
+
+    multi_graph = graph.to_multi()
+    print("========== Output g2o Graph Summary ================")
+    multi_graph.print_summary()
+    multi_graph.write_to(args.output_fpath)
