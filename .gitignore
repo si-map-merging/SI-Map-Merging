@@ -1,2 +1,5 @@
 # Visual Studio Code
 .vscode/
+
+# Build dirs
+*/build/
