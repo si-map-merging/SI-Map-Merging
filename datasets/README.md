@@ -2,7 +2,9 @@
 
 ## To view a dataset
 1. Build `g2o` from this link: <https://github.com/RainerKuemmerle/g2o>
-2. In its directory `bin`, run `./g2o_viewer`, and use its GUI to load a g2o file. 
+2. In its directory `bin`,
+   - run `./g2o_viewer [g2o file path]` 
+   - (OR) run `./g2o_viewer`, and use its GUI to load a g2o file.
 
 ## 2D datasets
 - `manhattanOlson3500.g2o`
