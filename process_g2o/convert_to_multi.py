@@ -230,7 +230,7 @@ class MultiRobotGraph:
             M: number of groups of aliases
             N: number of loop closures in each group
         """
-        pass
+        pass # TODO(Jay) Implement this
 
 
 if __name__ == "__main__":
