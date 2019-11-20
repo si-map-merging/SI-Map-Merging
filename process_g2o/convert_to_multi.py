@@ -223,6 +223,15 @@ class MultiRobotGraph:
                            for _ in range(N)]
         self.inter_lc += random_inter_lc
 
+    def add_perceptual_aliasing_lc(self, M=2, N=5):
+        """Add perceptual aliasing loop closures
+
+        Args:
+            M: number of groups of aliases
+            N: number of loop closures in each group
+        """
+        pass
+
 
 if __name__ == "__main__":
     # Parse command line arguments
