@@ -2,6 +2,7 @@ import math
 import numpy as np
 from convert_to_multi import *
 import argparse
+import random
 import pdb
 
 def inverse_op(pose, cov):
@@ -42,27 +43,12 @@ def compound_op(pose1, pose2, cov1, cov2, cov_cross):
 def compute_mahalanobis_distance():
     pass
 
-class CrossPose(Edge):
-    pass
 
 class AdjacencyMatrix:
-    def __init__(self, multi_graph, gamma=1):
+    def __init__(self, multi_graph, gamma=0.5):
         self.gamma = gamma
-        self.graphA = graphA
-        self.graphB = graphB
-        assert len(graphA.nodes) == len(graphB.nodes)
-        self.N = len(graphA.nodes)
-        # self.adjacency_matrix = np.zeros((self.num_measurements, self.num_measurements))
-
-    def build_cross_traj_poses_vec(self):
-        cross_pose_vector = np.zeros(self.N * self.N)
-        nNodes = 0
-        for idx1, pose1 in graphA.nodes:
-            for idx2, pose2 in graphB.nodes:
-                cross_pose = self.compute_cross_pose(pose1, pose2)
-                cross_pose_vector[nNodes] = cross_pose
-                nNodes = nNodes + 1
-        return cross_pose_vector
+        self.graph = multi_graph
+        self.inter_lc_N = len(multi_graph.inter_lc)
 
     def compute_cross_pose(self, pose1, pose2):
         """
@@ -71,24 +57,24 @@ class AdjacencyMatrix:
         pass
 
     def build_adjacency_matrix(self):
-        adjacency_matrix = np.zeros((self.N * self.N, self.N * self.N))
-        for i in range(self.N * self.N):
-            for j in range(self.N * self.N):
-                mahl = self.compute_mahalanobis_distance(cross_pose_vector[i], 
-                                                         cross_pose_vector[j])
+        adjacency_matrix = np.zeros((self.inter_lc_N, self.inter_lc_N))
+        for i in range(self.inter_lc_N):
+            for j in range(self.inter_lc_N):
+                mahl = self.compute_mahalanobis_distance(self.graph.inter_lc[i],
+                                                         self.graph.inter_lc[j])
                 if mahl <= self.gamma:
                     adjacency_matrix[i, j] = 1
         return adjacency_matrix
 
-    def compute_mahalanobis_distance(self, pose1, pose2):
-        return 1
+    def compute_mahalanobis_distance(self, edge1, edge2):
+        """
+        Input: edge1: Edge object
+               edge2: Edge object
+        """
+        return random.uniform(0,1)
     
-    def get_covariance():
-        return np.identity(3)
-
-
-
-
+    def get_covariance(self):
+        return np.random.rand(3,3)
 
 
 if __name__ == "__main__":
@@ -96,14 +82,14 @@ if __name__ == "__main__":
         description="Build the adjacency matrix given two g2o files")
     parser.add_argument("input_fpath", metavar="input.g2o", type=str,
                         help="g2o file path")
-    # parser.add_argument("input_fpath2", metavar="input2.g2o", type=str,
-                        # help="second g2o file path")
-    parser.add_argument("output_fpath", metavar="adjacency.txt", type=str,
+    parser.add_argument("output_fpath", metavar="adjacency.txt", type=str, nargs='?',
                         default="adjacency.txt", help="adjacency file path")
     args = parser.parse_args()
 
     graph = SingleRobotGraph(args.input_fpath)
     multi_graph = graph.to_multi()
     multi_graph.add_random_inter_lc()
-
+    adj = AdjacencyMatrix(multi_graph, 0.5)
     adjMatrix = adj.build_adjacency_matrix()
+    # adjMatrix.tofile(args.output_fpath)
+    np.savetxt(args.output_fpath, adjMatrix, delimiter=', ')

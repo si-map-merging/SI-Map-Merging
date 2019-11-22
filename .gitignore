@@ -3,3 +3,10 @@
 
 # Build dirs
 */build/
+
+__pycache__
+
+# ignore emacs file
+*~
+
+build_adjacency/*.g2o
