@@ -60,11 +60,19 @@ class AdjacencyMatrix:
         adjacency_matrix = np.zeros((self.inter_lc_N, self.inter_lc_N))
         for i in range(self.inter_lc_N):
             for j in range(self.inter_lc_N):
-                mahl = self.compute_mahalanobis_distance(self.graph.inter_lc[i],
+                mahlij = self.compute_mahalanobis_distance(self.graph.inter_lc[i],
                                                          self.graph.inter_lc[j])
-                if mahl <= self.gamma:
+                mahlji = self.compute_mahalanobis_distance(self.graph.inter_lc[j],
+                                                         self.graph.inter_lc[i])
+                if (mahlij <= self.gamma) and (mahlji <= self.gamma):
                     adjacency_matrix[i, j] = 1
+                    adjacency_matrix[j, i] = 1
+
+        assert self.check_symmetry(adjacency_matrix)
         return adjacency_matrix
+
+    def check_symmetry(self, adj_matrix):
+        return np.allclose(adj_matrix, np.transpose(adj_matrix))
 
     def compute_mahalanobis_distance(self, edge1, edge2):
         """
