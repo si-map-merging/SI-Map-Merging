@@ -1,0 +1,3 @@
+# How to use
+
+python3 build_adjacency input.g2o adjacency.txt
