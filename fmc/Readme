@@ -1,0 +1,50 @@
+To Compile:
+===========
+cd src
+make
+
+To Run:
+===========
+./fmc <inputfile>
+OPTIONS:
+	-t algorithm type	   : 0 for exact, 1 for heuristic(default)
+	-l input lower bound	: intial max clique size e.g. default 0
+	-p print clique		: This parameter if want to print the max clique (only for exact algorithm)
+
+example:
+===========
+exact algorithm:
+-----------
+./fmc ../testgraphs/hamming6-2.clq.mtx
+
+heuristic:
+-----------
+./fmc -t 1 ../testgraphs/hamming6-2.clq.mtx
+
+exact algorithm, with lower bound 5, and print the clique members:
+-----------
+./fmc ../testgraphs/hamming6-2.clq.mtx -p -l 5
+
+Input file format:
+------------------
+Supports most formats where edges are listed one per line (comments on top might have to be removed). Definitely supports the Matrix Market Format.
+Links: http://math.nist.gov/MatrixMarket/formats.html#MMformat
+We use the "Coordinate Format"
+
+Sample file:
+------------
+%% Some specific commands related to mtx file format
+#of rows #of comlumns #of nonzeors
+each line specifies row-index and column-index for each nonzero
+
+For example:
+-----------
+%%MatrixMarket matrix coordinate pattern symmetric
+8 8 6
+3 2
+4 1
+5 2
+5 3
+5 4
+8 4
+
