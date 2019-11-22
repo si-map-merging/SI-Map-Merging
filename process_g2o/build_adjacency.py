@@ -1,6 +1,7 @@
 import math
 import numpy as np
-import convert_to_multi
+from convert_to_multi import *
+import argparse
 import pdb
 
 def inverse_op(pose, cov):
@@ -13,10 +14,10 @@ def inverse_op(pose, cov):
     new_pose = [-x*math.cos(phi)-y*math.sin(phi),
                 x*math.sin(phi)-y*math.cos(phi),
                 -phi]
-    J_minus = np.matrix([[-math.cos(phi) -math.sin(phi) y], \
-                         [math.sin(phi) -math.cos(phi) -x], \
-                         [0              0             -1]])
-    new_cov = np.matmul(np.matmul(J_, cov), np.transpose(J_))
+    J_minus = np.matrix([[-math.cos(phi), -math.sin(phi), y], \
+                         [math.sin(phi), -math.cos(phi), -x], \
+                         [0,              0,             -1]])
+    new_cov = np.matmul(np.matmul(J_minus, cov), np.transpose(J_minus))
     return new_pose, new_cov
 
 def compound_op(pose1, pose2, cov1, cov2, cov_cross):
@@ -30,11 +31,11 @@ def compound_op(pose1, pose2, cov1, cov2, cov_cross):
     new_pose = [x2*math.cos(phi1) - y2*math.sin(phi1) + x1,
                 x2*math.sin(phi1) + y2*math.cos(phi1) + y1,
                 phi1 + phi2]
-    prev_cov = np.matrix([[cov1                 cov_cross],
-                          [np.transpose(cov_cross)   cov2]])
-    J_plus = np.matrix([[1 0 -(new_pose[1]-y1) math.cos(phi1) -math.sin(phi1) 0], \
-                        [0 1 (new_pose[0]-x1) math.sin(phi1) -math.cos(phi1)  0], \
-                        [0 0       1              0               0           1]])
+    prev_cov = np.matrix([[cov1,                 cov_cross],
+                          [np.transpose(cov_cross),   cov2]])
+    J_plus = np.matrix([[1, 0, -(new_pose[1]-y1), math.cos(phi1), -math.sin(phi1), 0], \
+                        [0, 1, (new_pose[0]-x1), math.sin(phi1), -math.cos(phi1),  0], \
+                        [0, 0,       1,              0,               0,           1]])
     new_cov = np.matmul(np.matmul(J_plus, prev_cov), np.transpose(J_plus))
     return new_pose, new_cov
 
@@ -45,11 +46,11 @@ class CrossPose(Edge):
     pass
 
 class AdjacencyMatrix:
-    def __init__(self, graphA, graphB, gamma=1):
+    def __init__(self, multi_graph, gamma=1):
         self.gamma = gamma
         self.graphA = graphA
         self.graphB = graphB
-        assert len(graphA.nodes) = len(graphB.nodes)
+        assert len(graphA.nodes) == len(graphB.nodes)
         self.N = len(graphA.nodes)
         # self.adjacency_matrix = np.zeros((self.num_measurements, self.num_measurements))
 
@@ -93,15 +94,16 @@ class AdjacencyMatrix:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given two g2o files")
-    parser.add_argument("input_fpath1", metavar="input1.g2o", type=str,
-                        help="first g2o file path")
-    parser.add_argument("input_fpath2", metavar="input2.g2o", type=str,
-                        help="second g2o file path")
+    parser.add_argument("input_fpath", metavar="input.g2o", type=str,
+                        help="g2o file path")
+    # parser.add_argument("input_fpath2", metavar="input2.g2o", type=str,
+                        # help="second g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.txt", type=str,
                         default="adjacency.txt", help="adjacency file path")
     args = parser.parse_args()
 
-    graphA = SingleRobotGraph(args.input_fpath1)
-    graphB = SingleRobotGraph(args.input_fpath2)
-    adj = AdjacencyMatrix(graphA, graphB, 1)
+    graph = SingleRobotGraph(args.input_fpath)
+    multi_graph = graph.to_multi()
+    multi_graph.add_random_inter_lc()
+
     adjMatrix = adj.build_adjacency_matrix()
