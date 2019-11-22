@@ -1,12 +1,16 @@
 # Visual Studio Code
 .vscode/
 
+# Mac
+.DS_Store
+
 # Build dirs
 */build/
 
+# python cache
 __pycache__
 
-# ignore emacs file
+# emacs file
 *~
 
 build_adjacency/*.g2o
