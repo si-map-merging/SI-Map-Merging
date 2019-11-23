@@ -3,6 +3,7 @@ import numpy as np
 from convert_to_multi import *
 import argparse
 import random
+from scipy import io, sparse
 import pdb
 
 def inverse_op(pose, cov):
@@ -50,16 +51,11 @@ class AdjacencyMatrix:
         self.graph = multi_graph
         self.inter_lc_N = len(multi_graph.inter_lc)
 
-    def compute_cross_pose(self, pose1, pose2):
-        """
-        return a CrossPose object, which is inheriting from Edge
-        """
-        pass
-
     def build_adjacency_matrix(self):
         adjacency_matrix = np.zeros((self.inter_lc_N, self.inter_lc_N))
         for i in range(self.inter_lc_N):
-            for j in range(self.inter_lc_N):
+            adjacency_matrix[i, i] = 1
+            for j in range(i):
                 mahlij = self.compute_mahalanobis_distance(self.graph.inter_lc[i],
                                                          self.graph.inter_lc[j])
                 mahlji = self.compute_mahalanobis_distance(self.graph.inter_lc[j],
@@ -69,7 +65,11 @@ class AdjacencyMatrix:
                     adjacency_matrix[j, i] = 1
 
         assert self.check_symmetry(adjacency_matrix)
-        return adjacency_matrix
+        print('The size of adjacency matrix is: ')
+        print(adjacency_matrix.shape)
+        sparse_adj_matrix = sparse.csr_matrix(adjacency_matrix)
+        coo_adj_matrix = sparse_adj_matrix.tocoo()
+        return coo_adj_matrix
 
     def check_symmetry(self, adj_matrix):
         return np.allclose(adj_matrix, np.transpose(adj_matrix))
@@ -90,14 +90,13 @@ if __name__ == "__main__":
         description="Build the adjacency matrix given two g2o files")
     parser.add_argument("input_fpath", metavar="input.g2o", type=str,
                         help="g2o file path")
-    parser.add_argument("output_fpath", metavar="adjacency.txt", type=str, nargs='?',
-                        default="adjacency.txt", help="adjacency file path")
+    parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
+                        default="adjacency.mtx", help="adjacency file path")
     args = parser.parse_args()
 
     graph = SingleRobotGraph(args.input_fpath)
     multi_graph = graph.to_multi()
     multi_graph.add_random_inter_lc()
     adj = AdjacencyMatrix(multi_graph, 0.5)
-    adjMatrix = adj.build_adjacency_matrix()
-    # adjMatrix.tofile(args.output_fpath)
-    np.savetxt(args.output_fpath, adjMatrix, delimiter=', ')
+    coo_adj_matrix = adj.build_adjacency_matrix()
+    io.mmwrite(args.output_fpath, coo_adj_matrix, symmetry='symmetric')

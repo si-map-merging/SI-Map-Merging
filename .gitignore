@@ -9,8 +9,10 @@
 
 # python cache
 __pycache__
+*.pyc
 
 # emacs file
 *~
 
 build_adjacency/*.g2o
+build_adjacency/*.mtx
