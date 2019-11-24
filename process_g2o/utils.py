@@ -1,6 +1,9 @@
 """Utilities for representing pose graphs
 """
 
+import random
+import math
+
 class Node:
     """Node of a 2D graph, representing a pose
 
@@ -93,12 +96,12 @@ class SingleRobotGraph:
         tag = values[0]
         if tag == "VERTEX_SE2":
             id_ = int(values[1])
-            x, y, theta = [float(x) for x in values[2:]]
+            x, y, theta = [float(v) for v in values[2:]]
             self.nodes[id_] = Node(id_, x, y, theta)
         elif tag == "EDGE_SE2":
             i, j = [int(x) for x in values[1:3]]
-            x, y, theta = [float(x) for x in values[3:6]]
-            info = [float(x) for x in values[6:]]
+            x, y, theta = [float(v) for v in values[3:6]]
+            info = [float(v) for v in values[6:]]
             edge = Edge(i, j, x, y, theta, info)
             if abs(i-j) == 1:
                 self.odom_edges.append(edge)
@@ -185,6 +188,14 @@ class MultiRobotGraph:
         """Write graph to file
         """
         fp = open(fpath, "w+")
+        # Write meta info on robots nodes separation
+        start = 0
+        for i, nodes in enumerate(self.nodes):
+            length = len(nodes)
+            end = start + length - 1
+            fp.write("# robot {}, nodes {} to {}\n".format(i, start, end))
+            start = end + 1
+
         for nodes in self.nodes:
             for node in nodes.values():
                 fp.write(node.to_g2o() + "\n")

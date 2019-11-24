@@ -5,8 +5,6 @@ Example usages:
 """
 
 import argparse
-import random
-import math
 from utils import SingleRobotGraph
 
 if __name__ == "__main__":
