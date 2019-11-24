@@ -4,6 +4,9 @@
 import random
 import math
 
+def in_range(x, range):
+    return x >= range[0] and x <= range[1]
+
 class Node:
     """Node of a 2D graph, representing a pose
 
@@ -148,13 +151,65 @@ class MultiRobotGraph:
         self.lc = [[] for _ in range(self.N)]
         self.inter_lc = []
 
+        # meta info
+        self.ranges = [[] for _ in range(self.N)]
+
     def read_from(self, fpath):
         """Read multi robot graph from g2o file
 
         Args:
             fpath: input g2o file path
         """
-        pass # TODO
+        with open(fpath) as fp:
+            line = self._process_meta(fp)
+            while line:
+                self._process_line(line)
+                line = fp.readline()
+
+    def _process_meta(self, fp):
+        """Process meta info of multi robot g2o
+        """
+        line = fp.readline()
+        while line.startswith("#Robot"):
+            values = line.split()
+            robot_idx = int(values[1])
+            start = int(values[2])
+            end = int(values[3])
+            self.ranges[robot_idx] = [start, end]
+            line = fp.readline()
+        return line
+
+    def _process_line(self, line):
+        """Process g2o line
+        """
+        values = line.split()
+        tag = values[0]
+        if tag == "VERTEX_SE2":
+            id_ = int(values[1])
+            x, y, theta = [float(v) for v in values[2:]]
+            for idx, range in enumerate(self.ranges):
+                if in_range(id_, range):
+                    self.nodes[idx][id_] = Node(id_, x, y, theta)
+                    break
+        elif tag == "EDGE_SE2":
+            i, j = [int(x) for x in values[1:3]]
+            x, y, theta = [float(v) for v in values[3:6]]
+            info = [float(v) for v in values[6:]]
+            edge = Edge(i, j, x, y, theta, info)
+
+            found = False
+            for idx, nodes in enumerate(self.nodes):
+                if i in nodes and j in nodes:
+                    if abs(i-j) == 1:
+                        self.odoms[idx].append(edge)
+                    else:
+                        self.lc[idx].append(edge)
+                    found = True
+                    break
+            if not found:
+                self.inter_lc.append(edge)
+        else:
+            raise Exception("Line with unknown tag")
 
     def read_nodes(self, nodes):
         """Split single robot nodes into nodes for 2 robots
@@ -170,7 +225,7 @@ class MultiRobotGraph:
         """
         for odom in odom_edges:
             for idx, nodes in enumerate(self.nodes):
-                if odom.i in nodes or odom.j in nodes:
+                if odom.i in nodes and odom.j in nodes:
                     self.odoms[idx].append(odom)
                     break
 
@@ -193,7 +248,7 @@ class MultiRobotGraph:
         for i, nodes in enumerate(self.nodes):
             length = len(nodes)
             end = start + length - 1
-            fp.write("# robot {}, nodes {} to {}\n".format(i, start, end))
+            fp.write("#Robot {} {} {}\n".format(i, start, end))
             start = end + 1
 
         for nodes in self.nodes:
