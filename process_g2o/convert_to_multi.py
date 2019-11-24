@@ -19,7 +19,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Construct graph from g2o file
-    graph = SingleRobotGraph(args.input_fpath)
+    graph = SingleRobotGraph()
+    graph.read_from(args.input_fpath)
 
     print("========== Input g2o Graph Summary ================")
     graph.print_summary()

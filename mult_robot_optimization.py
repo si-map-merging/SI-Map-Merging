@@ -28,6 +28,10 @@ if __name__ == "__main__":
     multi_graph.print_summary()
 
     # Separate into two single robot graphs
+    single_graphs = multi_graph.to_single()
+    for i, graph in enumerate(single_graphs):
+        print("========== Single Robot {} Graph Summary ===========".format(i))
+        graph.print_summary()
 
     # Feed graphs to GTSAM
 

@@ -69,17 +69,17 @@ class SingleRobotGraph:
         odom_edges: odometry edges
         loop_closure_edges: loop closure edges
     """
+    def __init__(self):
+        self.nodes = {}
+        self.odom_edges = []
+        self.loop_closure_edges = []
 
-    def __init__(self, fpath):
-        """Construct the graph from file
+    def read_from(self, fpath):
+        """Read the graph from g2o file
 
         Args:
             fpath: input g2o file path
         """
-        self.is_single_robot = True
-        self.nodes = {}
-        self.odom_edges = []
-        self.loop_closure_edges = []
         with open(fpath) as fp:
             line = fp.readline()
             while line:
@@ -297,3 +297,18 @@ class MultiRobotGraph:
             N: number of loop closures in each group
         """
         pass # TODO(Jay) Implement this
+
+    def to_single(self):
+        """Convert multi robot graph into separate single robot graphs
+
+        Returns:
+            A list of single robot graphs
+        """
+        single_graphs = []
+        for i in range(self.N):
+            graph = SingleRobotGraph()
+            graph.nodes = self.nodes[i]
+            graph.odom_edges = self.odoms[i]
+            graph.loop_closure_edges = self.lc[i]
+            single_graphs.append(graph)
+        return single_graphs
