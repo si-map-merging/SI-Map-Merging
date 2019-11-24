@@ -5,7 +5,7 @@
 .DS_Store
 
 # Build dirs
-*/build/
+build/
 
 # python cache
 __pycache__

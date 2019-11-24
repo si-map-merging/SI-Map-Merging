@@ -2,7 +2,13 @@
 
 ## Requirements
 * Install GTSAM as in: <https://github.com/borglab/gtsam>
+* Install GTSAM python per instruction in its `cython` folder
+------------------------------------------------
+## Python Usage
 
+
+------------------------------------------------
+## C++ Usage
 ## Build
 1. `mkdir build`
 2. `cd build`
