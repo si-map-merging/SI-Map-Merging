@@ -1,4 +1,5 @@
-"""Given a multi robot g2o file, generate the adjacency matrix
+"""Given a multi robot g2o file, obtain trusted inter-robot loop closures, and
+optimize the overall graph
 
 Example usages:
     TODO
@@ -33,3 +34,7 @@ if __name__ == "__main__":
     # Compute consistency matrix
 
     # Compute Adjacency matrix
+
+    # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
+
+    # Perform overall graph optimization
