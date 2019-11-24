@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/*   Description:  a library for finding the maximum clique of a graph     		   */                                                   
+/*   Description:  a library for finding the maximum clique of a graph     		   */
 /*                                                                           		   */
 /*                                                                           		   */
 /*   Authors: Bharath Pattabiraman and Md. Mostofa Ali Patwary               		   */
@@ -31,21 +31,21 @@ int main(int argc, char *argv[])
 	{
 		switch (opt)
 		{
-			case 't':
-				algType = atoi(optarg);
-				break;
-			case 'l':
+          case 't':
+            algType = atoi(optarg);
+            break;
+          case 'l':
             iMaxClique = atoi(optarg);
             break;
-         case 'p':
+          case 'p':
             print_clique = 1;
             break;
-			case '?':
-				usage(argv[0]);
-				break;
-			default:
-				usage(argv[0]);
-				break;
+          case '?':
+            usage(argv[0]);
+            break;
+          default:
+            usage(argv[0]);
+            break;
 		}
 	}
 
@@ -91,23 +91,37 @@ int main(int argc, char *argv[])
 	double seconds = wtime();
    vector <int> max_clique_data;
 
+    // cout << "Vertices: ";
+    // for(int i=0;i<gio.m_vi_Vertices.size();i++)
+    //   cout << gio.m_vi_Vertices[i] << ", ";
+    // cout << endl;
+    // cout << "Edges: ";
+    // for(int i=0;i<gio.m_vi_Edges.size();i++)
+    //   cout << gio.m_vi_Edges[i] << ", ";
+    // cout << endl;
+
 	switch (algType)
 	{
-		case 0:
-			//Exact algorithm with lower bound.
-			cout << "Running Exact Algorithm ... " << endl;
-			iMaxClique = maxClique(gio, iMaxClique, max_clique_data);
-			break;
-		case 1:
-			//Heuristic
-			cout << "Running Heuristic ... " << endl;
-			iMaxClique = maxCliqueHeu(gio);
-			break;
-		default:
-			//Exact algorithm with lower bound 0 by default
-			iMaxClique = maxClique(gio, 0, max_clique_data);
-			cout << "Running Exact Algorithm by default ... " << endl;
-			break;
+      case 0:
+        //Exact algorithm with lower bound.
+        cout << "Running Exact Algorithm ... " << endl;
+        iMaxClique = maxClique(gio, iMaxClique, max_clique_data);
+        break;
+      case 1:
+        //Heuristic Modified by Josh Mangelson
+        cout << "Running Heuristic ... " << endl;
+        iMaxClique = maxCliqueHeu(gio, max_clique_data);
+        break;
+      // case 2:
+      //   //Heuristic Added By Josh Mangelson
+      //   cout << "Running PCM Heuristic ... " << endl;
+      //   iMaxClique = maxCliqueHeu_PCM(gio, max_clique_data);
+      //   break;
+      default:
+        //Exact algorithm with lower bound 0 by default
+        iMaxClique = maxClique(gio, 0, max_clique_data);
+        cout << "Running Exact Algorithm by default ... " << endl;
+        break;
 	}
 
 	seconds = wtime() - seconds;
@@ -115,10 +129,12 @@ int main(int argc, char *argv[])
 	cout << "Max clique Size : " << iMaxClique << endl;
 	fclose(fpInputFileNames);
 
-   if(print_clique == 1 && algType!=1)
-      print_max_clique(max_clique_data);
+  //   if(print_clique == 1 && algType!=1)
+  //print_max_clique(max_clique_data);
+  if(print_clique == 1)
+    print_max_clique(max_clique_data);
 
-	cout << "Time taken : " << seconds << " SEC" << endl;			
+	cout << "Time taken : " << seconds << " SEC" << endl;
 
    max_clique_data.clear();
 

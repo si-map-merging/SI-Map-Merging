@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/*   Description:  a library for finding the maximum clique of a graph     		   */                                                   
+/*   Description:  a library for finding the maximum clique of a graph     		   */
 /*                                                                           		   */
 /*                                                                           		   */
 /*   Authors: Bharath Pattabiraman and Md. Mostofa Ali Patwary               		   */
@@ -43,6 +43,6 @@ int maxClique( CGraphIO& gio, int l_bound, vector<int>& max_clique_data );
 void maxCliqueHelper( CGraphIO& gio, vector<int>* U, int sizeOfClique, int& maxClq, vector<int>& max_clique_data_inter );
 
 int maxCliqueHeu( CGraphIO& gio );
-void maxCliqueHelperHeu( CGraphIO& gio, vector<int>* U, int sizeOfClique, int& maxClq, vector<int>& max_clique_data_inter ); 
-
-#endif 
+// Modified version by Josh Mangelson
+int maxCliqueHeu( CGraphIO& gio, vector<int>& max_clique_data );
+#endif

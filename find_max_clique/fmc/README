@@ -9,7 +9,7 @@ To Run:
 OPTIONS:
 	-t algorithm type	   : 0 for exact, 1 for heuristic(default)
 	-l input lower bound	: intial max clique size e.g. default 0
-	-p print clique		: This parameter if want to print the max clique (only for exact algorithm)
+	-p print clique		: This parameter if want to print the max clique
 
 example:
 ===========
