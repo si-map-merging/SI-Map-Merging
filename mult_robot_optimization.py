@@ -7,6 +7,7 @@ Example usages:
 
 import argparse
 from process_g2o.utils import MultiRobotGraph
+from find_max_clique.find_max_clique import find_max_clique
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -20,8 +21,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Construct multi robot graph from g2o file
-    graph = MultiRobotGraph()
-    # graph.read_from(args.input_fpath)
+    multi_graph = MultiRobotGraph()
+    multi_graph.read_from(args.input_fpath)
+
+    print("========== Multi Robot Graph Summary ==============")
+    multi_graph.print_summary()
 
     # Separate into two single robot graphs
 
@@ -34,7 +38,10 @@ if __name__ == "__main__":
     # Compute consistency matrix
 
     # Compute Adjacency matrix
+    # mtx_fpath = "adj.mtx"
 
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
+    fmc_path = "find_max_clique/fmc/src/fmc"
+    # trusted_lc = find_max_clique(fmc_path, mtx_fpath)
 
     # Perform overall graph optimization
