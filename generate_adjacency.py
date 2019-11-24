@@ -5,10 +5,7 @@ Example usages:
 """
 
 import argparse
-import sys
-# A hack to include package from another directory
-sys.path.insert(1, "../../process_g2o")
-from utils import MultiRobotGraph
+from process_g2o.utils import MultiRobotGraph
 
 if __name__ == "__main__":
     # Parse command line arguments
