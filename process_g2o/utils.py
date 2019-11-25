@@ -71,8 +71,8 @@ class SingleRobotGraph:
     """
     def __init__(self):
         self.nodes = {}
-        self.odom_edges = []
-        self.loop_closure_edges = []
+        self.odom_edges = {}
+        self.loop_closure_edges = {}
 
     def read_from(self, fpath):
         """Read the graph from g2o file
@@ -107,9 +107,9 @@ class SingleRobotGraph:
             info = [float(v) for v in values[6:]]
             edge = Edge(i, j, x, y, theta, info)
             if abs(i-j) == 1:
-                self.odom_edges.append(edge)
+                self.odom_edges[(i, j)]  = edge
             else:
-                self.loop_closure_edges.append(edge)
+                self.loop_closure_edges[(i, j)] = edge
         else:
             raise Exception("Line with unknown tag")
 
@@ -147,9 +147,9 @@ class MultiRobotGraph:
     def __init__(self):
         self.N = 2
         self.nodes = [{} for _ in range(self.N)]
-        self.odoms = [[] for _ in range(self.N)]
-        self.lc = [[] for _ in range(self.N)]
-        self.inter_lc = []
+        self.odoms = [{} for _ in range(self.N)]
+        self.lc = [{} for _ in range(self.N)]
+        self.inter_lc = {}
 
         # meta info
         self.ranges = [[] for _ in range(self.N)]
@@ -201,13 +201,13 @@ class MultiRobotGraph:
             for idx, nodes in enumerate(self.nodes):
                 if i in nodes and j in nodes:
                     if abs(i-j) == 1:
-                        self.odoms[idx].append(edge)
+                        self.odoms[idx][(i, j)] = edge
                     else:
-                        self.lc[idx].append(edge)
+                        self.lc[idx][(i, j)] = edge
                     found = True
                     break
             if not found:
-                self.inter_lc.append(edge)
+                self.inter_lc[(i, j)] = edge
         else:
             raise Exception("Line with unknown tag")
 
@@ -223,21 +223,24 @@ class MultiRobotGraph:
     def read_edges(self, odom_edges, loop_closure_edges):
         """Split single robot edges into edges for 2 robots
         """
-        for odom in odom_edges:
+        for odom in odom_edges.values():
             for idx, nodes in enumerate(self.nodes):
                 if odom.i in nodes and odom.j in nodes:
-                    self.odoms[idx].append(odom)
+                    i, j = odom.i, odom.j
+                    self.odoms[idx][(i, j)] = odom
                     break
 
-        for lc in loop_closure_edges:
+        for lc in loop_closure_edges.values():
             is_self_lc = False
             for idx, nodes in enumerate(self.nodes):
                 if lc.i in nodes and lc.j in nodes:
-                    self.lc[idx].append(lc)
+                    i, j = lc.i, lc.j
+                    self.lc[idx][(i, j)] = lc
                     is_self_lc = True
                     break
             if not is_self_lc:
-                self.inter_lc.append(lc)
+                i, j = lc.i, lc.j
+                self.inter_lc[(i, j)] = lc
 
     def write_to(self, fpath):
         """Write graph to file
@@ -255,7 +258,7 @@ class MultiRobotGraph:
             for node in nodes.values():
                 fp.write(node.to_g2o() + "\n")
         for edges in self.odoms + self.lc + [self.inter_lc]:
-            for edge in edges:
+            for edge in edges.values():
                 fp.write(edge.to_g2o() + "\n")
 
     def print_summary(self):
@@ -287,7 +290,8 @@ class MultiRobotGraph:
                                 random.normalvariate(theta_mu, theta_sigma),
                                 info)
                            for _ in range(N)]
-        self.inter_lc += random_inter_lc
+        random_inter_lc = {(edge.i, edge.j) : edge for edge in random_inter_lc}
+        self.inter_lc.update(random_inter_lc)
 
     def add_perceptual_aliasing_lc(self, M=2, N=5):
         """Add perceptual aliasing loop closures
