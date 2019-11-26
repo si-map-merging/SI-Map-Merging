@@ -1,59 +1,29 @@
+"""
+Build the adjacency matrix
+"""
 import math
-import numpy as np
-from convert_to_multi import *
 import argparse
 import random
 from scipy import io, sparse
-import pdb
+import numpy as np
+from convert_to_multi import *
 
-def inverse_op(pose, cov):
-    """
-    Compute x_ji given x_ij
-    Input: A 3x1 pose vector [x, y, phi]
-           The covariance matrix Cov of that pose, cov is a np array
-    """
-    x, y, phi = pose
-    new_pose = [-x*math.cos(phi)-y*math.sin(phi),
-                x*math.sin(phi)-y*math.cos(phi),
-                -phi]
-    J_minus = np.matrix([[-math.cos(phi), -math.sin(phi), y], \
-                         [math.sin(phi), -math.cos(phi), -x], \
-                         [0,              0,             -1]])
-    new_cov = np.matmul(np.matmul(J_minus, cov), np.transpose(J_minus))
-    return new_pose, new_cov
-
-def compound_op(pose1, pose2, cov1, cov2, cov_cross):
-    """
-    Compute pose1 circle+ pose2
-    Input: pose1 = [x1, y1, phi1]
-           pose2 = [x2, y2, phi2]
-    """
-    x1, y1, phi1 = pose1
-    x2, y2, phi2 = pose2
-    new_pose = [x2*math.cos(phi1) - y2*math.sin(phi1) + x1,
-                x2*math.sin(phi1) + y2*math.cos(phi1) + y1,
-                phi1 + phi2]
-    prev_cov = np.matrix([[cov1,                 cov_cross],
-                          [np.transpose(cov_cross),   cov2]])
-    J_plus = np.matrix([[1, 0, -(new_pose[1]-y1), math.cos(phi1), -math.sin(phi1), 0], \
-                        [0, 1, (new_pose[0]-x1), math.sin(phi1), -math.cos(phi1),  0], \
-                        [0, 0,       1,              0,               0,           1]])
-    new_cov = np.matmul(np.matmul(J_plus, prev_cov), np.transpose(J_plus))
-    return new_pose, new_cov
-
-def compute_mahalanobis_distance():
-    pass
 
 
 class AdjacencyMatrix:
-    def __init__(self, multi_graph, gamma=0.5):
+    """
+    The major class for building the adjacency matrix
+    """
+    def __init__(self, multi_rob_graph, gamma=0.5):
         self.gamma = gamma
         self.graph = multi_graph
-        self.inter_lc_N = len(multi_graph.inter_lc)
+        self.inter_lc_n = len(multi_rob_graph.inter_lc)
+        # single_graphs = multi_graph.to_single()
+        # self.graphA, self.graphB = single_graphs
 
     def build_adjacency_matrix(self):
-        adjacency_matrix = np.zeros((self.inter_lc_N, self.inter_lc_N))
-        for i in range(self.inter_lc_N):
+        adjacency_matrix = np.zeros((self.inter_lc_n, self.inter_lc_n))
+        for i in range(self.inter_lc_n):
             adjacency_matrix[i, i] = 1
             for j in range(i):
                 mahlij = self.compute_mahalanobis_distance(self.graph.inter_lc[i],
@@ -72,6 +42,7 @@ class AdjacencyMatrix:
         return coo_adj_matrix
 
     def check_symmetry(self, adj_matrix):
+        """Check if the adjacency matrix is symmetric"""
         return np.allclose(adj_matrix, np.transpose(adj_matrix))
 
     def compute_mahalanobis_distance(self, edge1, edge2):
@@ -79,10 +50,116 @@ class AdjacencyMatrix:
         Input: edge1: Edge object
                edge2: Edge object
         """
-        return random.uniform(0,1)
+        z_ik = edge1
+        z_jl = edge2
+        i = z_ik.i
+        k = z_ik.j
+        j = z_jl.i
+        l = z_jl.j
+        x_ij = self.compute_current_estimate(i, j, 'a')
+        x_lk = self.compute_current_estimate(l, k, 'b')
+        new_edge = self.inverse_op(z_ik)
+        
+        return random.uniform(0, 1)
     
+    def compute_current_estimate(self, start, end, robot_idx):
+        """
+        Compute intra-robot pose and return an Edge object
+        Input: Start index and end index of robot_idx
+        Output: An Edge object
+        """
+        # if start > end:
+        #     tmp = start
+        #     start = end
+        #     end = tmp
+        
+        # if robot_idx == 'a':
+        #     initial_pose = self.retrieve_edge(start, start + 1)
+        #     for i in range(start, end):
+        #         j = i + 1
+        #         edge1 = self.retrieve_edge(i, j, robot_idx)
+        #         edge2 = self.retrieve_edge(j, j+1, robot_idx)
+        pass
+
+    def inverse_op(self, pose):
+        """
+        Compute x_ji given x_ij
+        Input: An Edge object
+        Output: An Edge object
+        """
+        x = pose.x
+        y = pose.y
+        theta = pose.theta
+        cov = self.get_covariance(pose)
+
+        new_x = -x*math.cos(theta)-y*math.sin(theta)
+        new_y = x*math.sin(theta)-y*math.cos(theta)
+        new_theta = -theta
+
+        J_minus = np.matrix([[-math.cos(theta), -math.sin(theta), y], \
+                             [math.sin(theta), -math.cos(theta), -x], \
+                             [0, 0, -1]])
+        new_cov = np.matmul(np.matmul(J_minus, cov), np.transpose(J_minus))
+        new_info = self.to_info(new_cov)
+        return Edge(pose.j, pose.i, new_x, new_y, new_theta, new_info)
+
+    def compound_op(self, pose1, pose2):
+        """
+        Compute pose1 circle+ pose2
+        Input: Two Edge objects pose1 and pose2
+        Output: An Edge object
+        """
+        x1, y1, theta1 = pose1.x, pose1.y, pose1.theta
+        x2, y2, theta2 = pose2.x, pose2.y, pose2.theta
+        new_x = x2*math.cos(theta1) - y2*math.sin(theta1) + x1
+        new_y = x2*math.sin(theta1) + y2*math.cos(theta1) + y1
+        new_theta = theta1 + theta2
+        cov1 = self.get_covariance(pose1)
+        cov2 = self.get_covariance(pose2)
+        cross_cov = self.get_cross_covariance(pose1, pose2)
+
+        # prev_cov is a 6x6 matrix
+        prev_cov = np.zeros((6, 6))
+        prev_cov[0:3, 0:3] = cov1
+        prev_cov[0:3, 3:6] = cross_cov
+        prev_cov[3:6, 0:3] = np.transpose(cross_cov)
+        prev_cov[3:6, 3:6] = cov2
+
+        J_plus = np.matrix([[1, 0, -(new_y-y1), math.cos(theta1), -math.sin(theta1), 0], \
+                            [0, 1, (new_x-x1), math.sin(theta1), -math.cos(theta1), 0], \
+                            [0, 0, 1, 0, 0, 1]])
+
+        new_cov = np.matmul(np.matmul(J_plus, prev_cov), np.transpose(J_plus))
+        new_info = self.to_info(new_cov)
+
+        return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
+
+    def get_covariance(self, pose):
+        """
+        Get the covariance matrix given an Edge object
+        Input: An Edge object
+        Output: A numpy array
+        """
+        pass
+
+    def get_cross_covariance(self, pose1, pose2):
+        """
+        Compute the cross covariance of pose1 and pose2
+        Input: Two Edge objects pose1 and pose2
+        Output: A numpy matrix
+        """
+        pass
+
+    def to_info(self, cov):
+        """
+        Convert the covariance matrix to info (6x1 vector in 2D)
+        Input: A covariance matrix
+        Output: A vector
+        """
+        pass
+
     def get_covariance(self):
-        return np.random.rand(3,3)
+        return np.random.rand(3, 3)
 
 
 if __name__ == "__main__":
@@ -98,5 +175,5 @@ if __name__ == "__main__":
     multi_graph = graph.to_multi()
     multi_graph.add_random_inter_lc()
     adj = AdjacencyMatrix(multi_graph, 0.5)
-    coo_adj_matrix = adj.build_adjacency_matrix()
-    io.mmwrite(args.output_fpath, coo_adj_matrix, symmetry='symmetric')
+    coo_adj_mat = adj.build_adjacency_matrix()
+    io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')
