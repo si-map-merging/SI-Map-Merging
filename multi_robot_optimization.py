@@ -8,6 +8,8 @@ Example usages:
 import argparse
 from process_g2o.utils import MultiRobotGraph
 from find_max_clique.find_max_clique import find_max_clique
+from gtsam_optimize import optimization
+
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -34,8 +36,11 @@ if __name__ == "__main__":
         graph.print_summary()
 
     # Feed graphs to GTSAM
-
-    # Optimize graphs with GTSAM
+    for robot_i, graph in enumerate(single_graphs):
+        graph = optimization.Graph(graph)
+        graph.optimize()
+        print("===== Single Robot {} Graph Optimization =====".format(robot_i))
+        graph.print_stats()
 
     # Compute Jacobian => Covariances
 
