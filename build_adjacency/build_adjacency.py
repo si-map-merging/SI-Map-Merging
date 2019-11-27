@@ -3,11 +3,10 @@ Build the adjacency matrix
 """
 import math
 import argparse
-import random
+# import random
 from scipy import io, sparse
 import numpy as np
-from convert_to_multi import *
-
+from PCM.process_g2o.utils import *
 
 
 class AdjacencyMatrix:
@@ -41,7 +40,8 @@ class AdjacencyMatrix:
         coo_adj_matrix = sparse_adj_matrix.tocoo()
         return coo_adj_matrix
 
-    def check_symmetry(self, adj_matrix):
+    @classmethod
+    def check_symmetry(cls, adj_matrix):
         """Check if the adjacency matrix is symmetric"""
         return np.allclose(adj_matrix, np.transpose(adj_matrix))
 
@@ -58,9 +58,12 @@ class AdjacencyMatrix:
         l = z_jl.j
         x_ij = self.compute_current_estimate(i, j, 'a')
         x_lk = self.compute_current_estimate(l, k, 'b')
-        new_edge = self.inverse_op(z_ik)
-        
-        return random.uniform(0, 1)
+        new_edge = self.compound_op(self.compound_op(self.compound_op( \
+                                    self.inverse_op(z_ik), x_ij), z_jl), x_lk)
+        s = np.array([new_edge.x, new_edge.y, new_edge.theta])
+        sigma = self.get_covariance(new_edge)
+
+        return np.dot(np.dot(s.T, np.linalg.inv(sigma)), s)
     
     def compute_current_estimate(self, start, end, robot_idx):
         """
@@ -68,18 +71,22 @@ class AdjacencyMatrix:
         Input: Start index and end index of robot_idx
         Output: An Edge object
         """
-        # if start > end:
-        #     tmp = start
-        #     start = end
-        #     end = tmp
-        
-        # if robot_idx == 'a':
-        #     initial_pose = self.retrieve_edge(start, start + 1)
-        #     for i in range(start, end):
-        #         j = i + 1
-        #         edge1 = self.retrieve_edge(i, j, robot_idx)
-        #         edge2 = self.retrieve_edge(j, j+1, robot_idx)
-        pass
+        if robot_idx == 'a':
+            odoms = self.graph.odoms[0]
+        else:
+            odoms = self.graph.odoms[1]
+        try:
+            trans_pose = odoms[(start, start+1)]
+        except:
+            print("Problem finding relevant pose")
+
+        for i in range(start, end):
+            try:
+                next_edge = odoms[(i, i+1)]
+                trans_pose = self.compound_op(trans_pose, next_edge)
+            except:
+                print("Problem looping through graph's odoms")
+        return trans_pose
 
     def inverse_op(self, pose):
         """
@@ -116,7 +123,7 @@ class AdjacencyMatrix:
         new_theta = theta1 + theta2
         cov1 = self.get_covariance(pose1)
         cov2 = self.get_covariance(pose2)
-        cross_cov = self.get_cross_covariance(pose1, pose2)
+        cross_cov = self.get_cross_covariance()
 
         # prev_cov is a 6x6 matrix
         prev_cov = np.zeros((6, 6))
@@ -134,32 +141,39 @@ class AdjacencyMatrix:
 
         return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
-    def get_covariance(self, pose):
+    @classmethod
+    def get_covariance(cls, pose):
         """
         Get the covariance matrix given an Edge object
         Input: An Edge object
         Output: A numpy array
         """
-        pass
+        cov = np.zeros((3, 3))
+        cov[0, 0:3] = pose.info[0:3]
+        cov[1, 1:3] = pose.info[3:5]
+        cov[2, 2] = pose.info[5]
+        return cov + cov.T - np.diag(cov.diagonal())
 
-    def get_cross_covariance(self, pose1, pose2):
+    @classmethod
+    def get_cross_covariance(cls):
         """
         Compute the cross covariance of pose1 and pose2
+        Note: Currently assumming a zero matrix
         Input: Two Edge objects pose1 and pose2
         Output: A numpy matrix
         """
-        pass
+        return np.zeros((3, 3))
 
-    def to_info(self, cov):
+    @classmethod
+    def to_info(cls, cov):
         """
         Convert the covariance matrix to info (6x1 vector in 2D)
         Input: A covariance matrix
         Output: A vector
         """
-        pass
-
-    def get_covariance(self):
-        return np.random.rand(3, 3)
+        info = [cov[0, 0], cov[0, 1], cov[0, 2], \
+                cov[1, 1], cov[1, 2], cov[2, 2]]
+        return info
 
 
 if __name__ == "__main__":
