@@ -3,6 +3,7 @@
 
 import random
 import math
+from math import sqrt
 
 def in_range(x, range):
     return x >= range[0] and x <= range[1]
@@ -28,6 +29,9 @@ class Node:
         """
         return "VERTEX_SE2 {} {} {} {}".format(self.id_, self.x, self.y,
                                                self.theta)
+
+    def pose(self):
+        return self.x, self.y, self.theta
 
 
 class Edge:
@@ -57,6 +61,15 @@ class Edge:
                                                self.theta)
         result += " ".join([str(x) for x in self.info])
         return result
+
+    def measurement(self):
+        return self.x, self.y, self.theta
+
+    def diagonal_sigmas(self):
+        return 1/sqrt(self.info[0]), 1/sqrt(self.info[3]), 1/sqrt(self.info[5])
+
+    def has_diagonal_info(self):
+        return self.info[1] == self.info[2] == self.info[4] == 0
 
 
 class SingleRobotGraph:
@@ -130,6 +143,15 @@ class SingleRobotGraph:
         multi_graph.read_nodes(self.nodes)
         multi_graph.read_edges(self.odom_edges, self.loop_closure_edges)
         return multi_graph
+
+    def write_to(self, fpath):
+        """Write graph to file
+        """
+        fp = open(fpath, "w+")
+        for node in self.nodes.values():
+            fp.write(node.to_g2o() + "\n")
+        for edge in self.odom_edges.values() + self.loop_closure_edges.values():
+            fp.write(edge.to_g2o() + "\n")
 
 class MultiRobotGraph:
     """Multi robot graph
