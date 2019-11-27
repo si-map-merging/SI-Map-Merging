@@ -5,8 +5,8 @@ import random
 import math
 from math import sqrt
 
-def in_range(x, range):
-    return x >= range[0] and x <= range[1]
+def in_range(x, range_):
+    return x >= range_[0] and x <= range_[1]
 
 class Node:
     """Node of a 2D graph, representing a pose
