@@ -38,10 +38,10 @@ if __name__ == "__main__":
 
     # Feed graphs to GTSAM
     for robot_i, graph in enumerate(single_graphs):
-        graph = optimization.Graph(graph)
-        graph.optimize()
+        gtsam_graph = optimization.Graph(graph)
+        gtsam_graph.optimize()
         print("===== Single Robot {} Graph Optimization =====".format(robot_i))
-        graph.print_stats()
+        gtsam_graph.print_stats()
 
     # Compute Jacobian => Covariances
 
