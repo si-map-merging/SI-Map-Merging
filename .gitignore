@@ -13,7 +13,7 @@ __pycache__
 
 # emacs file
 *~
-#*#
+\#*
 
 build_adjacency/*.g2o
 build_adjacency/*.mtx

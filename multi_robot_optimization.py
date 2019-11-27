@@ -8,6 +8,7 @@ Example usages:
 import argparse
 from process_g2o.utils import MultiRobotGraph
 from find_max_clique.find_max_clique import find_max_clique
+from build_adjacency.build_adjacency import AdjacencyMatrix
 
 if __name__ == "__main__":
     # Parse command line arguments
