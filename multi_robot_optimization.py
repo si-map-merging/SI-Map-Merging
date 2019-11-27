@@ -11,6 +11,7 @@ from find_max_clique.find_max_clique import find_max_clique
 from gtsam_optimize import optimization
 
 
+
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(

@@ -8,7 +8,7 @@ import argparse
 from scipy import io, sparse
 import numpy as np
 # sys.path.append("..")
-from PCM.process_g2o.utils import MultiRobotGraph, Edge
+from process_g2o.utils import MultiRobotGraph, Edge
 
 
 class AdjacencyMatrix:
