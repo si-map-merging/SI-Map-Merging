@@ -3,12 +3,9 @@ Build the adjacency matrix
 """
 import math
 import argparse
-# import random
-# import sys
 from scipy import io, sparse
 import numpy as np
-# sys.path.append("..")
-from PCM.process_g2o.utils import MultiRobotGraph, Edge
+from process_g2o.utils import SingleRobotGraph, Edge
 
 
 class AdjacencyMatrix:
@@ -19,18 +16,17 @@ class AdjacencyMatrix:
         self.gamma = gamma
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
-        # single_graphs = multi_graph.to_single()
-        # self.graphA, self.graphB = single_graphs
+        self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
 
     def build_adjacency_matrix(self):
         adjacency_matrix = np.zeros((self.inter_lc_n, self.inter_lc_n))
         for i in range(self.inter_lc_n):
             adjacency_matrix[i, i] = 1
             for j in range(i):
-                mahlij = self.compute_mahalanobis_distance(self.graph.inter_lc[i],
-                                                         self.graph.inter_lc[j])
-                mahlji = self.compute_mahalanobis_distance(self.graph.inter_lc[j],
-                                                         self.graph.inter_lc[i])
+                mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
+                         self.inter_lc_edges[j])
+                mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
+                         self.inter_lc_edges[i])
                 if (mahlij <= self.gamma) and (mahlji <= self.gamma):
                     adjacency_matrix[i, j] = 1
                     adjacency_matrix[j, i] = 1
@@ -66,7 +62,7 @@ class AdjacencyMatrix:
         sigma = self.get_covariance(new_edge)
 
         return np.dot(np.dot(s.T, np.linalg.inv(sigma)), s)
-    
+
     def compute_current_estimate(self, start, end, robot_idx):
         """
         Compute intra-robot pose and return an Edge object
@@ -79,6 +75,8 @@ class AdjacencyMatrix:
             odoms = self.graph.odoms[0]
         else:
             odoms = self.graph.odoms[1]
+        
+        
         try:
             trans_pose = odoms[(start, start+1)]
         except:
@@ -163,7 +161,7 @@ class AdjacencyMatrix:
     def get_cross_covariance(cls):
         """
         Compute the cross covariance of pose1 and pose2
-        Note: Currently assumming a zero matrix, meaning we assume the measurements 
+        Note: Currently assumming a zero matrix, meaning we assume the measurements
         are independent to each other
         Input: Two Edge objects pose1 and pose2
         Output: A numpy matrix
@@ -191,9 +189,15 @@ if __name__ == "__main__":
                         default="adjacency.mtx", help="adjacency file path")
     args = parser.parse_args()
 
-    multi_graph = MultiRobotGraph()
-    multi_graph.read_from(args.input_fpath)
+    graph = SingleRobotGraph()
+    graph.read_from(args.input_fpath)
+    print("========== Input g2o Graph Summary ================")
+    graph.print_summary()
+
+    multi_graph = graph.to_multi()
+    print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
+
     adj = AdjacencyMatrix(multi_graph, 0.5)
     coo_adj_mat = adj.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')
