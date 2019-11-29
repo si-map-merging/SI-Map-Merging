@@ -1,7 +1,6 @@
 """
 Build the adjacency matrix
 """
-import math
 import argparse
 from scipy import io, sparse
 import numpy as np
