@@ -12,7 +12,7 @@ class AdjacencyMatrix:
     """
     The major class for building the adjacency matrix
     """
-    def __init__(self, multi_rob_graph, gamma=0.5):
+    def __init__(self, multi_rob_graph, gamma=1e-6):
         self.gamma = gamma
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
@@ -25,8 +25,10 @@ class AdjacencyMatrix:
             for j in range(i):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
+                print("this mahlij is: " + str(float(mahlij)))
                 mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                          self.inter_lc_edges[i])
+                print("and this mahlji is: " + str(float(mahlji)))
                 if (mahlij <= self.gamma) and (mahlji <= self.gamma):
                     adjacency_matrix[i, j] = 1
                     adjacency_matrix[j, i] = 1
@@ -60,7 +62,6 @@ class AdjacencyMatrix:
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([new_edge.x, new_edge.y, new_edge.theta])
         sigma = self.get_covariance(new_edge)
-
         return np.dot(np.dot(s.T, np.linalg.inv(sigma)), s)
 
     def compute_current_estimate(self, start, end, robot_idx):
@@ -71,23 +72,26 @@ class AdjacencyMatrix:
         Currently assuming the sequence is the same as the robot measurement
         sequence. Need to handle the reverse case later.
         """
+        isreversed = (start > end)
+
         if robot_idx == 'a':
             odoms = self.graph.odoms[0]
         else:
             odoms = self.graph.odoms[1]
-        
-        
-        try:
-            trans_pose = odoms[(start, start+1)]
-        except:
-            print("Problem finding relevant pose")
 
-        for i in range(start+1, end):
-            try:
+        if not isreversed:
+            trans_pose = odoms[(start, start+1)]
+
+            for i in range(start+1, end):
                 next_edge = odoms[(i, i+1)]
                 trans_pose = self.compound_op(trans_pose, next_edge)
-            except:
-                print("Problem looping through graph's odoms")
+        else:
+            start, end = end, start
+            trans_pose = odoms[(start, start+1)]
+            for j in range(start+1, end):
+                next_edge = odoms[(j, j+1)]
+                trans_pose = self.compound_op(trans_pose, next_edge)
+            trans_pose = self.inverse_op(trans_pose)
         return trans_pose
 
     def inverse_op(self, pose):
@@ -101,12 +105,12 @@ class AdjacencyMatrix:
         theta = pose.theta
         cov = self.get_covariance(pose)
 
-        new_x = -x*math.cos(theta)-y*math.sin(theta)
-        new_y = x*math.sin(theta)-y*math.cos(theta)
+        new_x = -x*np.cos(theta)-y*np.sin(theta)
+        new_y = x*np.sin(theta)-y*np.cos(theta)
         new_theta = -theta
 
-        J_minus = np.matrix([[-math.cos(theta), -math.sin(theta), new_y], \
-                             [math.sin(theta), -math.cos(theta), -new_x], \
+        J_minus = np.matrix([[-np.cos(theta), -np.sin(theta), new_y], \
+                             [np.sin(theta), -np.cos(theta), -new_x], \
                              [0, 0, -1]])
         new_cov = np.matmul(np.matmul(J_minus, cov), J_minus.T)
         new_info = self.to_info(new_cov)
@@ -120,8 +124,8 @@ class AdjacencyMatrix:
         """
         x1, y1, theta1 = pose1.x, pose1.y, pose1.theta
         x2, y2, theta2 = pose2.x, pose2.y, pose2.theta
-        new_x = x2*math.cos(theta1) - y2*math.sin(theta1) + x1
-        new_y = x2*math.sin(theta1) + y2*math.cos(theta1) + y1
+        new_x = x2*np.cos(theta1) - y2*np.sin(theta1) + x1
+        new_y = x2*np.sin(theta1) + y2*np.cos(theta1) + y1
         new_theta = theta1 + theta2
         cov1 = self.get_covariance(pose1)
         cov2 = self.get_covariance(pose2)
@@ -134,13 +138,12 @@ class AdjacencyMatrix:
         prev_cov[3:6, 0:3] = np.transpose(cross_cov)
         prev_cov[3:6, 3:6] = cov2
 
-        J_plus = np.matrix([[1, 0, -(new_y-y1), math.cos(theta1), -math.sin(theta1), 0], \
-                            [0, 1, (new_x-x1), math.sin(theta1), math.cos(theta1), 0], \
+        J_plus = np.matrix([[1, 0, -(new_y-y1), np.cos(theta1), -np.sin(theta1), 0], \
+                            [0, 1, (new_x-x1), np.sin(theta1), np.cos(theta1), 0], \
                             [0, 0, 1, 0, 0, 1]])
 
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
         new_info = self.to_info(new_cov)
-
         return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
     def get_covariance(self, pose):
@@ -183,8 +186,8 @@ class AdjacencyMatrix:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
-    parser.add_argument("input_fpath", metavar="input.g2o", type=str,
-                        help="g2o file path")
+    parser.add_argument("input_fpath", metavar="city10000.g2o", type=str, nargs='?',
+                        default="../datasets/manhattanOlson3500.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
     args = parser.parse_args()
@@ -198,6 +201,6 @@ if __name__ == "__main__":
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    adj = AdjacencyMatrix(multi_graph, 0.5)
+    adj = AdjacencyMatrix(multi_graph, 1e-6)
     coo_adj_mat = adj.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')

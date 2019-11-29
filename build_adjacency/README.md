@@ -2,7 +2,7 @@
 
 Requires: numpy, scipy
 
-python3 build_adjacency input.g2o adjacency.mtx
+	python3 build_adjacency.py ../datasets/manhattanOlson3500.g2o mah_adjacency.mtx
 
 Go to ../fmc/src/
 
