@@ -242,7 +242,7 @@ class MultiRobotGraph:
             assert(idx < self.N)
             self.nodes[idx][k] = v
 
-    def read_edges(self, odom_edges, loop_closure_edges):
+    def read_edges(self, odom_edges, loop_closure_edges, n_max_inter_lc=15):
         """Split single robot edges into edges for 2 robots
         """
         for odom in odom_edges.values():
@@ -252,6 +252,7 @@ class MultiRobotGraph:
                     self.odoms[idx][(i, j)] = odom
                     break
 
+        n_inter_lc = 0
         for lc in loop_closure_edges.values():
             is_self_lc = False
             for idx, nodes in enumerate(self.nodes):
@@ -260,7 +261,8 @@ class MultiRobotGraph:
                     self.lc[idx][(i, j)] = lc
                     is_self_lc = True
                     break
-            if not is_self_lc:
+            if not is_self_lc and n_inter_lc < n_max_inter_lc:
+                n_inter_lc += 1
                 i, j = lc.i, lc.j
                 self.inter_lc[(i, j)] = lc
 
@@ -293,7 +295,7 @@ class MultiRobotGraph:
                                                     for x in self.lc]))
         print("# Inter loop closures: {}".format(len(self.inter_lc)))
 
-    def add_random_inter_lc(self, N=90):
+    def add_random_inter_lc(self, N=20):
         """Add randomly generated inter loop closures
         """
         x_mu = random.uniform(-5, 5)
