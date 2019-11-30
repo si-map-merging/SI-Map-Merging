@@ -4,6 +4,7 @@ Build the adjacency matrix
 import argparse
 from scipy import io, sparse
 import numpy as np
+from tqdm import tqdm
 from process_g2o.utils import SingleRobotGraph, Edge
 
 
@@ -11,26 +12,40 @@ class AdjacencyMatrix:
     """
     The major class for building the adjacency matrix
     """
-    def __init__(self, multi_rob_graph, gamma=1e-6):
+    def __init__(self, multi_rob_graph, gamma=3):
         self.gamma = gamma
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
 
+    def get_trusted_lc(self, indices):
+        """Get trusted loop closure edges
+
+        Args:
+            indices: list of trusted indices, indexed from 1
+        """
+        trusted = []
+        for idx in indices:
+            trusted.append(self.inter_lc_edges[idx-1])
+        return trusted
+
     def build_adjacency_matrix(self):
         adjacency_matrix = np.zeros((self.inter_lc_n, self.inter_lc_n))
-        for i in range(self.inter_lc_n):
+        for i in tqdm(range(self.inter_lc_n)):
             adjacency_matrix[i, i] = 1
             for j in range(i):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
                 print("this mahlij is: " + str(float(mahlij)))
-                mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
-                         self.inter_lc_edges[i])
-                print("and this mahlji is: " + str(float(mahlji)))
-                if (mahlij <= self.gamma) and (mahlji <= self.gamma):
-                    adjacency_matrix[i, j] = 1
-                    adjacency_matrix[j, i] = 1
+                # mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
+                #          self.inter_lc_edges[i])
+                if (mahlij <= self.gamma):#  and (mahlji <= self.gamma):
+                    mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
+                                                                self.inter_lc_edges[i])
+                    print("and this mahlji is: " + str(float(mahlji)))
+                    if mahlji <= self.gamma:
+                        adjacency_matrix[j, i] = 1
+                        adjacency_matrix[i, j] = 1
 
         assert self.check_symmetry(adjacency_matrix)
         print('The size of adjacency matrix is: ')
@@ -151,11 +166,12 @@ class AdjacencyMatrix:
         Input: An Edge object
         Output: A numpy array
         """
-        cov = np.zeros((3, 3))
-        cov[0, 0:3] = pose.info[0:3]
-        cov[1, 1:3] = pose.info[3:5]
-        cov[2, 2] = pose.info[5]
-        cov_mat = cov + cov.T - np.diag(cov.diagonal())
+        info = np.zeros((3, 3))
+        info[0, 0:3] = pose.info[0:3]
+        info[1, 1:3] = pose.info[3:5]
+        info[2, 2] = pose.info[5]
+        info_mat = info + info.T - np.diag(info.diagonal())
+        cov_mat = np.linalg.inv(info_mat)
         assert self.check_symmetry(cov_mat)
         return cov_mat
 
@@ -177,8 +193,9 @@ class AdjacencyMatrix:
         Input: A covariance matrix
         Output: A vector
         """
-        info = [cov[0, 0], cov[0, 1], cov[0, 2], \
-                cov[1, 1], cov[1, 2], cov[2, 2]]
+        info_mat = np.linalg.inv(cov)
+        info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
+                info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
 
 
@@ -197,9 +214,10 @@ if __name__ == "__main__":
     graph.print_summary()
 
     multi_graph = graph.to_multi()
+    multi_graph.add_random_inter_lc()
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    adj = AdjacencyMatrix(multi_graph, 1e-6)
+    adj = AdjacencyMatrix(multi_graph)
     coo_adj_mat = adj.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')

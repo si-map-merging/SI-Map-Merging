@@ -6,10 +6,11 @@ Example usages:
 """
 
 import argparse
+from scipy import io
 from process_g2o.utils import MultiRobotGraph
 from find_max_clique.find_max_clique import find_max_clique
 from gtsam_optimize import optimization
-
+from build_adjacency.build_adjacency import AdjacencyMatrix
 
 
 if __name__ == "__main__":
@@ -30,28 +31,33 @@ if __name__ == "__main__":
     print("========== Multi Robot Graph Summary ==============")
     multi_graph.print_summary()
 
-    # Separate into two single robot graphs
-    single_graphs = multi_graph.to_single()
-    for i, graph in enumerate(single_graphs):
-        print("========== Single Robot {} Graph Summary ===========".format(i))
-        graph.print_summary()
+    # # Separate into two single robot graphs
+    # single_graphs = multi_graph.to_single()
+    # for i, graph in enumerate(single_graphs):
+    #     print("========== Single Robot {} Graph Summary ===========".format(i))
+    #     graph.print_summary()
 
-    # Feed graphs to GTSAM
-    for robot_i, graph in enumerate(single_graphs):
-        gtsam_graph = optimization.Graph(graph)
-        gtsam_graph.optimize()
-        print("===== Single Robot {} Graph Optimization =====".format(robot_i))
-        gtsam_graph.print_stats()
+    # # Feed graphs to GTSAM
+    # for robot_i, graph in enumerate(single_graphs):
+    #     gtsam_graph = optimization.Graph(graph)
+    #     gtsam_graph.optimize()
+    #     print("===== Single Robot {} Graph Optimization =====".format(robot_i))
+    #     gtsam_graph.print_stats()
 
     # Compute Jacobian => Covariances
 
     # Compute consistency matrix
-
+    adj = AdjacencyMatrix(multi_graph)
+    
     # Compute Adjacency matrix
-    # mtx_fpath = "adj.mtx"
+    coo_adj_mat = adj.build_adjacency_matrix()
+    mtx_fpath = "adj.mtx"
+    io.mmwrite(mtx_fpath, coo_adj_mat, symmetry='symmetric')
 
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
     fmc_path = "find_max_clique/fmc/src/fmc"
-    # trusted_lc = find_max_clique(fmc_path, mtx_fpath)
+    trusted_lc_indices = find_max_clique(fmc_path, mtx_fpath)
+    print(trusted_lc_indices)
+    trusted_lc = adj.get_trusted_lc(trusted_lc_indices)
 
     # Perform overall graph optimization
