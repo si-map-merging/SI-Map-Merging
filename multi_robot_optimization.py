@@ -57,6 +57,7 @@ if __name__ == "__main__":
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
     fmc_path = "find_max_clique/fmc/src/fmc"
     trusted_lc_indices = find_max_clique(fmc_path, mtx_fpath)
+    print("# trusted lc: {}".format(len(trusted_lc_indices)))
     print(trusted_lc_indices)
     trusted_lc = adj.get_trusted_lc(trusted_lc_indices)
     multi_graph.set_inter_lc(trusted_lc)
