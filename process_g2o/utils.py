@@ -71,6 +71,13 @@ class Edge:
     def has_diagonal_info(self):
         return self.info[1] == self.info[2] == self.info[4] == 0
 
+    def __str__(self):
+        return "{} {} {} {} {} {}".format(self.i, self.j, self.x, self.y, self.theta,
+                                   self.info)
+
+    def __repr__(self):
+        return str(self)
+
 
 class SingleRobotGraph:
     """Single robot graph representation of g2o file
@@ -306,11 +313,11 @@ class MultiRobotGraph:
         """Add randomly generated inter loop closures
         """
         x_mu = random.uniform(-5, 5)
-        x_sigma = random.uniform(-2, 2)
+        x_sigma = 0.15
         y_mu = random.uniform(-5, 5)
-        y_sigma = random.uniform(-2, 2)
+        y_sigma = 0.15
         theta_mu = random.uniform(-math.pi, math.pi)
-        theta_sigma = random.uniform(-0.5, 0.5)
+        theta_sigma = 0.15
 
         info = [1/x_sigma**2, 0, 0, 1/y_sigma**2, 0, 1/theta_sigma**2]
 
