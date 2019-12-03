@@ -133,7 +133,7 @@ class SingleRobotGraph:
         print("# Odometry edges: {}".format(len(self.odom_edges)))
         print("# Loop closure edges: {}".format(len(self.loop_closure_edges)))
 
-    def to_multi(self):
+    def to_multi(self, n_max_inter_lc=15):
         """Extract a multi-robot graph from current graph
 
         Returns:
@@ -141,7 +141,8 @@ class SingleRobotGraph:
         """
         multi_graph = MultiRobotGraph()
         multi_graph.read_nodes(self.nodes)
-        multi_graph.read_edges(self.odom_edges, self.loop_closure_edges)
+        multi_graph.read_edges(self.odom_edges, self.loop_closure_edges,
+                               n_max_inter_lc)
         return multi_graph
 
     def write_to(self, fpath):
