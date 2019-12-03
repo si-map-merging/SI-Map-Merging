@@ -253,7 +253,7 @@ class MultiRobotGraph:
                     self.odoms[idx][(i, j)] = odom
                     break
 
-        n_inter_lc = 0
+        inter_lc = []
         for lc in loop_closure_edges.values():
             is_self_lc = False
             for idx, nodes in enumerate(self.nodes):
@@ -262,10 +262,16 @@ class MultiRobotGraph:
                     self.lc[idx][(i, j)] = lc
                     is_self_lc = True
                     break
-            if not is_self_lc and n_inter_lc < n_max_inter_lc:
-                n_inter_lc += 1
-                i, j = lc.i, lc.j
-                self.inter_lc[(i, j)] = lc
+            if not is_self_lc:
+                inter_lc.append(lc)
+
+        # Randomly choose n_max_inter_lc of inter robot lc
+        if n_max_inter_lc < len(inter_lc):
+            inter_lc = random.sample(inter_lc, n_max_inter_lc)
+
+        for lc in inter_lc:
+            i, j = lc.i, lc.j
+            self.inter_lc[(i, j)] = lc
 
     def write_to(self, fpath):
         """Write graph to file
