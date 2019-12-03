@@ -18,17 +18,19 @@ class AdjacencyMatrix:
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
-
-    def single_graphs_optimization(self):
         graph1, graph2 = self.graph.to_singles()
         self.gtsam_graph1 = Graph(graph1)
         self.gtsam_graph2 = Graph(graph2)
+
+    def single_graphs_optimization(self):
+        """
+        Optimize the single robot graphs using gtsam, see optimization.py
+        """
         print("=========== Single Graphs Optimization ==============")
         self.gtsam_graph1.optimize()
         self.gtsam_graph2.optimize()
         self.gtsam_graph1.print_stats()
         self.gtsam_graph2.print_stats()
-
 
     def get_trusted_lc(self, indices):
         """Get trusted loop closure edges
@@ -42,6 +44,10 @@ class AdjacencyMatrix:
         return trusted
 
     def build_adjacency_matrix(self):
+        """
+        The central function in AdjacencyMatrix class.
+        Return: A symmetric matrix whose entries are either 0 or 1
+        """
         adjacency_matrix = np.zeros((self.inter_lc_n, self.inter_lc_n))
         for i in tqdm(range(self.inter_lc_n)):
             adjacency_matrix[i, i] = 1
@@ -125,7 +131,28 @@ class AdjacencyMatrix:
         Input: Start index and end index of robot_idx
         Output: An Edge object
         """
+        isreversed = start > end
+
+        if robot_idx == 'a':
+            pass
+            
+        pass
+
+    def optimized_node_to_virtual_edge(self, idx, robot_idx):
+        """
+        Convert a post-optimization Node with covariance to a 'virtual Edge'. The
+        first index is 'w', meaning world. We are estimating from the world frame 
+        to that node. The reason doing this is to make it easy to use the inverse_op
+        and compound_op operations to get new Edge objects.
         
+        Input: the index of the pose: idx
+               the index of the robot: robot_idx
+        Output: an Edge object
+        """
+        if robot_idx == 'a':
+            pose = self.gtsam_graph1.get_pose(idx)
+            cov = self.gtsam_graph1.cov(idx)
+            return
 
     def inverse_op(self, pose):
         """
@@ -168,7 +195,7 @@ class AdjacencyMatrix:
         prev_cov = np.zeros((6, 6))
         prev_cov[0:3, 0:3] = cov1
         prev_cov[0:3, 3:6] = cross_cov
-        prev_cov[3:6, 0:3] = np.transpose(cross_cov)
+        prev_cov[3:6, 0:3] = cross_cov.T
         prev_cov[3:6, 3:6] = cov2
 
         J_plus = np.matrix([[1, 0, -(new_y-y1), np.cos(theta1), -np.sin(theta1), 0], \

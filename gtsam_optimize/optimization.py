@@ -86,6 +86,15 @@ class Graph:
         key_vec.push_back(j)
         return self.marginals.jointMarginalCovariance(key_vec).fullMatrix()
 
+    def get_pose(self, idx):
+        """
+        After optimization, extract the pose of index idx
+        Return: A numpy array (3x3 for 2D)
+        """
+        # result_poses = gtsam.extractPose2(self.result)
+        # return result_poses[idx]
+        pass
+
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
         """
