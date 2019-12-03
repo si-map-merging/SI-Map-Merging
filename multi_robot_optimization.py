@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # Compute Jacobian => Covariances
 
     # Compute consistency matrix
-    adj = AdjacencyMatrix(multi_graph)
+    adj = AdjacencyMatrix(multi_graph, gamma=1)
 
     # Compute Adjacency matrix
     coo_adj_mat = adj.build_adjacency_matrix()
@@ -60,13 +60,14 @@ if __name__ == "__main__":
     print(trusted_lc_indices)
     trusted_lc = adj.get_trusted_lc(trusted_lc_indices)
     multi_graph.set_inter_lc(trusted_lc)
+    multi_graph.write_to(args.output_fpath)
 
-    # Perform overall graph optimization
-    merged_graph = multi_graph.merge_to_single()
-    gtsam_graph = optimization.Graph(merged_graph)
-    gtsam_graph.optimize()
-    print("===== Multi-Robot Optimization =====")
-    gtsam_graph.print_stats()
+    # # Perform overall graph optimization
+    # merged_graph = multi_graph.merge_to_single()
+    # gtsam_graph = optimization.Graph(merged_graph)
+    # gtsam_graph.optimize()
+    # print("===== Multi-Robot Optimization =====")
+    # gtsam_graph.print_stats()
 
-    # Write result as g2o
-    gtsam_graph.write_to(args.output_fpath)
+    # # Write result as g2o
+    # gtsam_graph.write_to(args.output_fpath)
