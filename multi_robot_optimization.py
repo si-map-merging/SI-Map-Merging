@@ -32,7 +32,7 @@ if __name__ == "__main__":
     multi_graph.print_summary()
 
     # # Separate into two single robot graphs
-    # single_graphs = multi_graph.to_single()
+    # single_graphs = multi_graph.to_singles()
     # for i, graph in enumerate(single_graphs):
     #     print("========== Single Robot {} Graph Summary ===========".format(i))
     #     graph.print_summary()
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # Compute consistency matrix
     adj = AdjacencyMatrix(multi_graph)
-    
+
     # Compute Adjacency matrix
     coo_adj_mat = adj.build_adjacency_matrix()
     mtx_fpath = "adj.mtx"
@@ -59,5 +59,14 @@ if __name__ == "__main__":
     trusted_lc_indices = find_max_clique(fmc_path, mtx_fpath)
     print(trusted_lc_indices)
     trusted_lc = adj.get_trusted_lc(trusted_lc_indices)
+    multi_graph.set_inter_lc(trusted_lc)
 
     # Perform overall graph optimization
+    merged_graph = multi_graph.merge_to_single()
+    gtsam_graph = optimization.Graph(merged_graph)
+    gtsam_graph.optimize()
+    print("===== Multi-Robot Optimization =====")
+    gtsam_graph.print_stats()
+
+    # Write result as g2o
+    gtsam_graph.write_to(args.output_fpath)

@@ -327,7 +327,7 @@ class MultiRobotGraph:
         """
         pass # TODO(Jay) Implement this
 
-    def to_single(self):
+    def to_singles(self):
         """Convert multi robot graph into separate single robot graphs
 
         Returns:
@@ -341,3 +341,27 @@ class MultiRobotGraph:
             graph.loop_closure_edges = self.lc[i]
             single_graphs.append(graph)
         return single_graphs
+
+    def set_inter_lc(self, inter_lc):
+        """Set the inter robot lc from the lc list
+        Args:
+            inter_lc: list of inter loop closures
+        """
+        self.inter_lc = {}
+        for edge in inter_lc:
+            i, j = edge.i, edge.j
+            self.inter_lc[(i, j)] = edge
+
+    def merge_to_single(self):
+        """Merge the multi robot graph as a single robot graph
+
+        Returns:
+            A single robot graph
+        """
+        graph = SingleRobotGraph()
+        for i in range(self.N):
+            graph.nodes.update(self.nodes[i])
+            graph.odom_edges.update(self.odoms[i])
+            graph.loop_closure_edges.update(self.lc[i])
+        graph.loop_closure_edges.update(self.inter_lc)
+        return graph

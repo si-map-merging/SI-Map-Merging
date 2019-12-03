@@ -25,11 +25,11 @@ if __name__ == "__main__":
     print("========== Input g2o Graph Summary ================")
     graph.print_summary()
 
-    multi_graph = graph.to_multi()
+    multi_graph = graph.to_multi(n_max_inter_lc=3)
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    multi_graph.add_random_inter_lc()
+    multi_graph.add_random_inter_lc(N=3)
     print("========== Noisy Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
     multi_graph.write_to(args.output_fpath)

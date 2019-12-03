@@ -73,3 +73,9 @@ class Graph:
 
     def get_covariance(self, idx):
         return self.marginals.marginalCovariance(idx)
+
+    def write_to(self, fpath):
+        """Write the optimized graph as g2o file
+        """
+        gtsam.writeG2o(self.graph, self.result, fpath)
+
