@@ -5,7 +5,7 @@ Example usages:
 """
 
 import argparse
-from utils import SingleRobotGraph
+from utils import SingleRobotGraph2D, SingleRobotGraph3D
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -16,10 +16,15 @@ if __name__ == "__main__":
     parser.add_argument("output_fpath", metavar="output.g2o", type=str,
                         nargs='?', default="output.g2o",
                         help="output g2o file path")
+    parser.add_argument("--3D", dest="is_3D", action="store_true", help="whether input is 3D")
     args = parser.parse_args()
 
+
     # Construct graph from g2o file
-    graph = SingleRobotGraph()
+    if args.is_3D:
+      graph = SingleRobotGraph3D()
+    else:
+      graph = SingleRobotGraph2D()
     graph.read_from(args.input_fpath)
 
     print("========== Input g2o Graph Summary ================")
@@ -29,7 +34,7 @@ if __name__ == "__main__":
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    multi_graph.add_random_inter_lc(N=20)
+    multi_graph.add_random_inter_lc(N=10)
     print("========== Noisy Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
     multi_graph.write_to(args.output_fpath)
