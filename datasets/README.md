@@ -26,5 +26,16 @@
 
   10000 poses, 20687 constraints (9999 odometry and 10688 loop closings)
 
+- `input_MITb_g2o.g2o`
+
+  Creator: Luca Carlone
+
+  Pose graph obtained by processing the raw measurements from wheel odometry and laser range finder, acquired at the MIT Killian Court.
+
+## 3D datasets
+- `parking-garage.g2o`
+
+  Creator: Luca Carlone
+
 ## Ground truth
 - Some of the datasets have ground truth, stored in `groundtruth` directory, obtained from: <https://github.com/rickytan/iSAM/tree/master/data/groundtruth>
