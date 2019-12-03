@@ -71,11 +71,46 @@ class Graph:
         print("initial error = {}".format(gtsam_graph.error(self.initial)))
         print("final error = {}".format(gtsam_graph.error(self.result)))
 
-    def get_covariance(self, idx):
+    def cov(self, idx):
         return self.marginals.marginalCovariance(idx)
+
+    def cross_cov(self, i, j):
+        key_vec = gtsam.gtsam.KeyVector()
+        key_vec.push_back(i)
+        key_vec.push_back(j)
+        return self.marginals.jointMarginalCovariance(key_vec).at(i, j)
+
+    def joint_marginal(self, i, j):
+        key_vec = gtsam.gtsam.KeyVector()
+        key_vec.push_back(i)
+        key_vec.push_back(j)
+        return self.marginals.jointMarginalCovariance(key_vec).fullMatrix()
 
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
         """
         gtsam.writeG2o(self.graph, self.result, fpath)
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../")
+    from process_g2o.utils import SingleRobotGraph
+
+    srg = SingleRobotGraph()
+    srg.read_from("../datasets/manhattanOlson3500.g2o")
+
+    gtsam_graph = Graph(srg)
+    gtsam_graph.optimize()
+    print("======= Manhattan Graph Optimization =========")
+    gtsam_graph.print_stats()
+
+    i = 0
+    print("======= Covariance of Node {} ===========".format(i))
+    print(gtsam_graph.cov(i))
+
+    j = 100
+    print("===== Cross Covariance between Node {} and {} ======".format(i, j))
+    print(gtsam_graph.cross_cov(i, j))
+
+    print("====== Joint Marginal of Node {} and {} =======".format(i, j))
+    print(gtsam_graph.joint_marginal(i, j))
