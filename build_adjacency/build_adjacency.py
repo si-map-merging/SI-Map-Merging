@@ -73,7 +73,7 @@ class AdjacencyMatrix:
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
-        print(s)
+        # print(s)
         sigma = self.get_covariance(new_edge)
         return np.matmul(np.matmul(s, np.linalg.inv(sigma)), s.T)[0][0]
 
