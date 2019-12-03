@@ -109,6 +109,45 @@ class Graph2D(Graph):
         self.initial = initial_estimates
 
 
+class Graph3D(Graph):
+    def set_anchor(self):
+        """Set prior on the first node, to make it an anchor
+        """
+        srg = self.srg
+        gtsam_graph = self.graph
+
+        # Set up first pose as origin
+        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(
+            vector6(0.1, 0.1, 0.1, 0.1, 0.1, 0.1))
+        min_node_idx = min(srg.nodes)
+        min_node = srg.nodes[min_node_idx]
+        gtsam_graph.add(gtsam.PriorFactorPose3(min_node.id_,
+                        gtsam.Pose3(min_node.pose()),
+                        PRIOR_NOISE))
+
+    def add_factors(self):
+        """Add odometry factors & loop closure factors
+        """
+        srg = self.srg
+        gtsam_graph = self.graph
+        for edge in list(srg.odom_edges.values()) + list(
+                     srg.loop_closure_edges.values()):
+            i, j = edge.i, edge.j
+            assert(edge.has_diagonal_info())
+            noise = gtsam.noiseModel_Gaussian.information(
+
+            )
+            gtsam_graph.add(gtsam.BetweenFactorPose2(
+                             i, j, gtsam.Pose2(*edge.measurement()), noise))
+
+    def create_initial(self):
+        """Create initial estimates
+        """
+        initial_estimates = gtsam.Values()
+        for node in self.srg.nodes.values():
+            initial_estimates.insert(node.id_, gtsam.Pose2(*node.pose()))
+        self.initial = initial_estimates
+
 
 if __name__ == "__main__":
     import sys

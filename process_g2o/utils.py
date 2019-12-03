@@ -38,6 +38,17 @@ class Quaternion:
         quat = np.hstack( (comp[1:], comp[:1]) )
         return Quaternion(quat)
 
+    @staticmethod
+    def to_R(q):
+        """
+        Args:
+            q: numpy array in (x, y, z, w) form
+        """
+        q_copy = np.asarray(q)
+        quat = np.hstack( (q_copy[:1], q_copy[1:]) )
+        qu = quaternion.from_float_array(*quat)
+        return quaternion.as_rotation_matrix(qu)
+
 
 class Node2D:
     """Node of a 2D graph, representing a pose
@@ -85,6 +96,12 @@ class Node3D:
         line += " ".join([str(x) for x in self.q])
         return line
 
+    def pose(self):
+        R = Quaternion.to_R(self.q)
+        T = np.identity(4)
+        T[:3, :3] = R
+        T[:3, 3] = self.t
+        return T
 
 class Edge2D:
     """Edge of a 2D graph, representing a measurement between 2 nodes
@@ -150,6 +167,14 @@ class Edge3D:
         line += " ".join([str(x) for x in self.q]) + " "
         line += " ".join([str(x) for x in self.info])
         return line
+
+    # def info_mat():
+    #     """
+    #     Return:
+    #         information matrix as 2D numpy array
+    #     """
+    #     info_mat = np.zeros(shape=(6, 6))
+    #     for i in range()
 
 
 class SingleRobotGraph:
