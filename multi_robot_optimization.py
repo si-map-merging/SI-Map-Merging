@@ -7,7 +7,7 @@ Example usages:
 
 import argparse
 from scipy import io
-from process_g2o.utils import MultiRobotGraph
+from process_g2o.utils import MultiRobotGraph, SingleRobotGraph
 from find_max_clique.find_max_clique import find_max_clique
 from gtsam_optimize import optimization
 from build_adjacency.build_adjacency import AdjacencyMatrix
@@ -25,6 +25,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Construct multi robot graph from g2o file
+    # graph = SingleRobotGraph()
+    # graph.read_from(args.input_fpath)
+    # multi_graph = graph.to_multi()
     multi_graph = MultiRobotGraph()
     multi_graph.read_from(args.input_fpath)
 

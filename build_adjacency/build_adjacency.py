@@ -6,6 +6,7 @@ from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
 from process_g2o.utils import SingleRobotGraph, Edge
+from gtsam_optimize.optimization import Graph
 
 
 class AdjacencyMatrix:
@@ -17,6 +18,17 @@ class AdjacencyMatrix:
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
+
+    def single_graphs_optimization(self):
+        graph1, graph2 = self.graph.to_singles()
+        self.gtsam_graph1 = Graph(graph1)
+        self.gtsam_graph2 = Graph(graph2)
+        print("=========== Single Graphs Optimization ==============")
+        self.gtsam_graph1.optimize()
+        self.gtsam_graph2.optimize()
+        self.gtsam_graph1.print_stats()
+        self.gtsam_graph2.print_stats()
+
 
     def get_trusted_lc(self, indices):
         """Get trusted loop closure edges
@@ -36,11 +48,13 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                # print("this mahlij is: " + str(float(mahlij)))
+                print("The Mah distance for" + '(' +str(i) + ', ' + str(j) +')' + \
+                      "is: " + str(float(mahlij)))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    # print("and this mahlji is: " + str(float(mahlji)))
+                    print("The Mah distance for" + '(' +str(j) + ', ' + str(i) +')' + \
+                          "is: " + str(float(mahlji)))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1
@@ -105,6 +119,14 @@ class AdjacencyMatrix:
                 trans_pose = self.compound_op(trans_pose, next_edge)
             trans_pose = self.inverse_op(trans_pose)
         return trans_pose
+
+    def compute_current_estimate_after_optimization(self, start, end, robot_idx):
+        """
+        Using the gtsam optimzation info to compute the current estimation
+        Input: Start index and end index of robot_idx
+        Output: An Edge object
+        """
+        
 
     def inverse_op(self, pose):
         """
@@ -201,7 +223,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
     parser.add_argument("input_fpath", metavar="city10000.g2o", type=str, nargs='?',
-                        default="../datasets/manhattanOlson3500.g2o", help="g2o file path")
+                        default="datasets/manhattanOlson3500.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
     args = parser.parse_args()
