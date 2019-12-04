@@ -7,6 +7,11 @@ def vector3(x, y, z):
     return np.array([x, y, z], dtype=np.float)
 
 
+def vector6(x, y, z, d, e, f):
+    """Create 3d double numpy array."""
+    return np.array([x, y, z, d, e, f], dtype=np.float)
+
+
 class Graph:
     """GTSAM graph
 
@@ -117,8 +122,8 @@ class Graph3D(Graph):
         gtsam_graph = self.graph
 
         # Set up first pose as origin
-        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(
-            vector6(0.1, 0.1, 0.1, 0.1, 0.1, 0.1))
+        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Variances(
+            vector6(1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4))
         min_node_idx = min(srg.nodes)
         min_node = srg.nodes[min_node_idx]
         gtsam_graph.add(gtsam.PriorFactorPose3(min_node.id_,
@@ -133,31 +138,35 @@ class Graph3D(Graph):
         for edge in list(srg.odom_edges.values()) + list(
                      srg.loop_closure_edges.values()):
             i, j = edge.i, edge.j
-            assert(edge.has_diagonal_info())
-            noise = gtsam.noiseModel_Gaussian.information(
-
-            )
-            gtsam_graph.add(gtsam.BetweenFactorPose2(
-                             i, j, gtsam.Pose2(*edge.measurement()), noise))
+            noise = gtsam.noiseModel_Gaussian.Covariance(edge.cov())
+            gtsam_graph.add(gtsam.BetweenFactorPose3(
+                             i, j, gtsam.Pose3(edge.measurement()), noise))
 
     def create_initial(self):
         """Create initial estimates
         """
         initial_estimates = gtsam.Values()
         for node in self.srg.nodes.values():
-            initial_estimates.insert(node.id_, gtsam.Pose2(*node.pose()))
+            initial_estimates.insert(node.id_, gtsam.Pose3(node.pose()))
         self.initial = initial_estimates
 
 
 if __name__ == "__main__":
     import sys
     sys.path.append("../")
-    from process_g2o.utils import SingleRobotGraph2D
+    from process_g2o.utils import SingleRobotGraph3D, SingleRobotGraph2D
 
-    srg = SingleRobotGraph2D()
-    srg.read_from("../datasets/manhattanOlson3500.g2o")
+    is_3D = True
+    if is_3D:
+        srg = SingleRobotGraph3D()
+        srg.read_from("../datasets/parking-garage.g2o")
+        gtsam_graph = Graph3D(srg)
+    else:
+        srg = SingleRobotGraph2D()
+        srg.read_from("../datasets/manhattanOlson3500.g2o")
+        gtsam_graph = Graph2D(srg)
 
-    gtsam_graph = Graph2D(srg)
+
     gtsam_graph.optimize()
     print("======= Manhattan Graph Optimization =========")
     gtsam_graph.print_stats()

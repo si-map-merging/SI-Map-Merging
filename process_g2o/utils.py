@@ -45,8 +45,8 @@ class Quaternion:
             q: numpy array in (x, y, z, w) form
         """
         q_copy = np.asarray(q)
-        quat = np.hstack( (q_copy[:1], q_copy[1:]) )
-        qu = quaternion.from_float_array(*quat)
+        quat = np.hstack( (q_copy[3:], q_copy[:3]) )
+        qu = quaternion.from_float_array(quat)
         return quaternion.as_rotation_matrix(qu)
 
 
@@ -168,14 +168,30 @@ class Edge3D:
         line += " ".join([str(x) for x in self.info])
         return line
 
-    # def info_mat():
-    #     """
-    #     Return:
-    #         information matrix as 2D numpy array
-    #     """
-    #     info_mat = np.zeros(shape=(6, 6))
-    #     for i in range()
+    def info_mat(self):
+        """
+        Return:
+            information matrix as 2D numpy array
+        """
+        N = 6
+        info_mat = np.zeros(shape=(N, N))
+        start = 0
+        for i in range(N):
+            info_mat[i, i:] = self.info[start: start + N-i]
+            start += N-i
+        info_mat = info_mat + info_mat.T - np.diag(info_mat.diagonal())
+        assert(np.allclose(info_mat, info_mat.T))
+        return info_mat
 
+    def cov(self):
+        return np.linalg.inv(self.info_mat())
+
+    def measurement(self):
+        R = Quaternion.to_R(self.q)
+        T = np.identity(4)
+        T[:3, :3] = R
+        T[:3, 3] = self.t
+        return T
 
 class SingleRobotGraph:
     """Single robot graph representation of g2o file
