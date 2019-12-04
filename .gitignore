@@ -17,3 +17,6 @@ __pycache__
 
 build_adjacency/*.g2o
 build_adjacency/*.mtx
+./*.mtx
+./*.g2o
+process_g2o/*.g2o
