@@ -143,7 +143,7 @@ class AdjacencyMatrix:
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """
         Convert a post-optimization Node with covariance to a 'virtual Edge'. The
-        first index is 'w', meaning world. We are estimating from the world frame 
+        first index is 'w', meaning world. We are estimating from the world frame
         to that node. The reason doing this is to make it easy to use the inverse_op
         and compound_op operations to get new Edge objects.
         
@@ -312,5 +312,6 @@ if __name__ == "__main__":
     multi_graph.print_summary()
 
     adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
+    adj.single_graphs_optimization()
     coo_adj_mat = adj.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')

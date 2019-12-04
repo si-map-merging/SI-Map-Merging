@@ -93,11 +93,9 @@ class Graph:
     def get_pose(self, idx):
         """
         After optimization, extract the pose of index idx
-        Return: A numpy array (3x3 for 2D)
+        Return: A numpy array (3x1 for 2D)
         """
-        result_poses = gtsam.extractPose2(self.result)
-        return result_poses[idx]
-        # pass
+        return self.result.atPose2(idx)
 
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
