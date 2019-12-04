@@ -5,8 +5,8 @@ import argparse
 from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
-from process_g2o.utils import SingleRobotGraph, Edge
-from gtsam_optimize.optimization import Graph
+from process_g2o.utils import SingleRobotGraph2D, Edge2D
+from gtsam_optimize.optimization import Graph2D
 
 
 class AdjacencyMatrix:
@@ -20,8 +20,8 @@ class AdjacencyMatrix:
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
         graph1, graph2 = self.graph.to_singles()
-        self.gtsam_graph1 = Graph(graph1)
-        self.gtsam_graph2 = Graph(graph2)
+        self.gtsam_graph1 = Graph2D(graph1)
+        self.gtsam_graph2 = Graph2D(graph2)
 
     def single_graphs_optimization(self):
         """
@@ -158,7 +158,7 @@ class AdjacencyMatrix:
             pose = self.gtsam_graph2.get_pose(idx)
             cov = self.gtsam_graph2.cov(idx)
             info = self.to_info(cov)
-        return Edge('w', idx, pose[0], pose[1], pose[2], info)
+        return Edge2D('w', idx, pose[0], pose[1], pose[2], info)
 
     def inverse_op(self, pose):
         """
@@ -180,7 +180,7 @@ class AdjacencyMatrix:
                              [0, 0, -1]])
         new_cov = np.matmul(np.matmul(J_minus, cov), J_minus.T)
         new_info = self.to_info(new_cov)
-        return Edge(pose.j, pose.i, new_x, new_y, new_theta, new_info)
+        return Edge2D(pose.j, pose.i, new_x, new_y, new_theta, new_info)
 
     def compound_op(self, pose1, pose2):
         """
@@ -210,7 +210,7 @@ class AdjacencyMatrix:
 
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
         new_info = self.to_info(new_cov)
-        return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
+        return Edge2D(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
     def inverse_compound(self, pose1, pose2, robot_idx):
         """
@@ -250,7 +250,7 @@ class AdjacencyMatrix:
                             [0, 0, 1, 0, 0, 1]])
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
         new_info = self.to_info(new_cov)
-        return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
+        return Edge2D(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
     def get_covariance(self, pose):
         """

@@ -369,38 +369,6 @@ class MultiRobotGraph:
             line = fp.readline()
         return line
 
-    def _process_line(self, line):
-        """Process g2o line
-        """
-        values = line.split()
-        tag = values[0]
-        if tag == "VERTEX_SE2":
-            id_ = int(values[1])
-            x, y, theta = [float(v) for v in values[2:]]
-            for idx, range in enumerate(self.ranges):
-                if in_range(id_, range):
-                    self.nodes[idx][id_] = Node(id_, x, y, theta)
-                    break
-        elif tag == "EDGE_SE2":
-            i, j = [int(x) for x in values[1:3]]
-            x, y, theta = [float(v) for v in values[3:6]]
-            info = [float(v) for v in values[6:]]
-            edge = Edge(i, j, x, y, theta, info)
-
-            found = False
-            for idx, nodes in enumerate(self.nodes):
-                if i in nodes and j in nodes:
-                    if abs(i-j) == 1:
-                        self.odoms[idx][(i, j)] = edge
-                    else:
-                        self.lc[idx][(i, j)] = edge
-                    found = True
-                    break
-            if not found:
-                self.inter_lc[(i, j)] = edge
-        else:
-            raise Exception("Line with unknown tag")
-
     def read_nodes(self, nodes):
         """Split single robot nodes into nodes for 2 robots
         """
@@ -544,6 +512,38 @@ class MultiRobotGraph2D(MultiRobotGraph):
                             for _ in range(N)]
         random_inter_lc = {(edge.i, edge.j) : edge for edge in random_inter_lc}
         self.inter_lc.update(random_inter_lc)
+
+    def _process_line(self, line):
+        """Process g2o line
+        """
+        values = line.split()
+        tag = values[0]
+        if tag == "VERTEX_SE2":
+            id_ = int(values[1])
+            x, y, theta = [float(v) for v in values[2:]]
+            for idx, range_ in enumerate(self.ranges):
+                if in_range(id_, range_):
+                    self.nodes[idx][id_] = Node2D(id_, x, y, theta)
+                    break
+        elif tag == "EDGE_SE2":
+            i, j = [int(x) for x in values[1:3]]
+            x, y, theta = [float(v) for v in values[3:6]]
+            info = [float(v) for v in values[6:]]
+            edge = Edge2D(i, j, x, y, theta, info)
+
+            found = False
+            for idx, nodes in enumerate(self.nodes):
+                if i in nodes and j in nodes:
+                    if abs(i-j) == 1:
+                        self.odoms[idx][(i, j)] = edge
+                    else:
+                        self.lc[idx][(i, j)] = edge
+                    found = True
+                    break
+            if not found:
+                self.inter_lc[(i, j)] = edge
+        else:
+            raise Exception("Line with unknown tag")
 
 
 class MultiRobotGraph3D(MultiRobotGraph):

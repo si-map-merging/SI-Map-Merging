@@ -169,7 +169,7 @@ if __name__ == "__main__":
     sys.path.append("../")
     from process_g2o.utils import SingleRobotGraph3D, SingleRobotGraph2D
 
-    is_3D = True
+    is_3D = False
     if is_3D:
         srg = SingleRobotGraph3D()
         srg.read_from("../datasets/parking-garage.g2o")
