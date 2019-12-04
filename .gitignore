@@ -19,4 +19,6 @@ __pycache__
 build_adjacency/*.g2o
 build_adjacency/*.mtx
 process_g2o/*.g2o
-./*.g2o
+/*.g2o
+/*.mtx
+gtsam_optimize/*.g2o
