@@ -7,7 +7,7 @@ Example usages:
 
 import argparse
 from scipy import io
-from process_g2o.utils import MultiRobotGraph, SingleRobotGraph
+from process_g2o.utils import MultiRobotGraph2D, MultiRobotGraph3D
 from find_max_clique.find_max_clique import find_max_clique
 from gtsam_optimize import optimization
 from build_adjacency.build_adjacency import AdjacencyMatrix
@@ -22,13 +22,15 @@ if __name__ == "__main__":
     parser.add_argument("output_fpath", metavar="output.g2o", type=str,
                         nargs='?', default="output.g2o",
                         help="output g2o file path")
+    parser.add_argument("--3D", dest="is_3D", action="store_true",
+                        help="whether input is 3D")
     args = parser.parse_args()
 
     # Construct multi robot graph from g2o file
-    # graph = SingleRobotGraph()
-    # graph.read_from(args.input_fpath)
-    # multi_graph = graph.to_multi()
-    multi_graph = MultiRobotGraph()
+    if args.is_3D:
+        multi_graph = MultiRobotGraph3D()
+    else:
+        multi_graph = MultiRobotGraph2D()
     multi_graph.read_from(args.input_fpath)
 
     print("========== Multi Robot Graph Summary ==============")
@@ -47,8 +49,6 @@ if __name__ == "__main__":
     #     print("===== Single Robot {} Graph Optimization =====".format(robot_i))
     #     gtsam_graph.print_stats()
 
-    # Compute Jacobian => Covariances
-
     # Compute consistency matrix
     adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
     adj.single_graphs_optimization()
@@ -57,9 +57,9 @@ if __name__ == "__main__":
     mtx_fpath = "adj.mtx"
     io.mmwrite(mtx_fpath, coo_adj_mat, symmetry='symmetric')
 
-    print("inital lc:\n")
-    for i, edge in enumerate(adj.inter_lc_edges, 1):
-        print("{}: {}".format(i, edge))
+    # print("inital lc:\n")
+    # for i, edge in enumerate(adj.inter_lc_edges, 1):
+    #     print("{}: {}".format(i, edge))
 
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
     fmc_path = "find_max_clique/fmc/src/fmc"
