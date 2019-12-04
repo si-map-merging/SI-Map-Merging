@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # Compute consistency matrix
     adj = AdjacencyMatrix(multi_graph, gamma=0.1)
-
+    adj.single_graphs_optimization()
     # Compute Adjacency matrix
     coo_adj_mat = adj.build_adjacency_matrix()
     mtx_fpath = "adj.mtx"
