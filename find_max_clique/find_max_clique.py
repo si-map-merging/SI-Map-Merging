@@ -29,5 +29,6 @@ def find_max_clique(fmc_path, input_fpath, heuristic=True):
     return nodes
 
 if __name__ == "__main__":
-    nodes = find_max_clique("fmc/src/fmc", "fmc/testgraphs/hamming6-2.clq.mtx")
+    # nodes = find_max_clique("fmc/src/fmc", "fmc/testgraphs/hamming6-2.clq.mtx")
+    nodes = find_max_clique("fmc/src/fmc", "../build_adjacency/adjacency.mtx")
     print(nodes)
