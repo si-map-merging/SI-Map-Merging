@@ -91,11 +91,13 @@ class Graph:
         return self.marginals.jointMarginalCovariance(key_vec).fullMatrix()
 
     def get_pose(self, idx):
+        """After optimization, extract the pose of index idx
+
+        Return:
+            pose as np.array([x, y, theta])
         """
-        After optimization, extract the pose of index idx
-        Return: A numpy array (3x1 for 2D)
-        """
-        return self.result.atPose2(idx)
+        pose = self.result.atPose2(idx)
+        return np.array([pose.x(), pose.y(), pose.theta()])
 
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
@@ -108,7 +110,7 @@ if __name__ == "__main__":
     from process_g2o.utils import SingleRobotGraph
 
     srg = SingleRobotGraph()
-    srg.read_from("datasets/manhattanOlson3500.g2o")
+    srg.read_from("../datasets/manhattanOlson3500.g2o")
 
     gtsam_graph = Graph(srg)
     gtsam_graph.optimize()
