@@ -15,5 +15,8 @@ __pycache__
 *~
 \#*
 
+# Temporary files
 build_adjacency/*.g2o
 build_adjacency/*.mtx
+process_g2o/*.g2o
+./*.g2o
