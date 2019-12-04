@@ -1,5 +1,9 @@
-import gtsam
+"""
+GTSAM Optimization
+"""
 import numpy as np
+import gtsam
+
 
 def vector3(x, y, z):
     """Create 3d double numpy array."""
@@ -31,7 +35,7 @@ class Graph:
                         PRIOR_NOISE))
 
         # Add odometry factors & loop closure factors
-        for edge in srg.odom_edges.values() + srg.loop_closure_edges.values():
+        for edge in list(srg.odom_edges.values()) + list(srg.loop_closure_edges.values()):
             i, j = edge.i, edge.j
             assert(edge.has_diagonal_info())
             noise = gtsam.noiseModel_Diagonal.Sigmas(
@@ -91,9 +95,9 @@ class Graph:
         After optimization, extract the pose of index idx
         Return: A numpy array (3x3 for 2D)
         """
-        # result_poses = gtsam.extractPose2(self.result)
-        # return result_poses[idx]
-        pass
+        result_poses = gtsam.extractPose2(self.result)
+        return result_poses[idx]
+        # pass
 
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
@@ -106,7 +110,7 @@ if __name__ == "__main__":
     from process_g2o.utils import SingleRobotGraph
 
     srg = SingleRobotGraph()
-    srg.read_from("../datasets/manhattanOlson3500.g2o")
+    srg.read_from("datasets/manhattanOlson3500.g2o")
 
     gtsam_graph = Graph(srg)
     gtsam_graph.optimize()

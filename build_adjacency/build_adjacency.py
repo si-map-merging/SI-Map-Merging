@@ -13,7 +13,8 @@ class AdjacencyMatrix:
     """
     The major class for building the adjacency matrix
     """
-    def __init__(self, multi_rob_graph, gamma=3):
+    def __init__(self, multi_rob_graph, gamma=3, optim=True):
+        self.optim = optim
         self.gamma = gamma
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
@@ -86,12 +87,15 @@ class AdjacencyMatrix:
         kk = z_ik.j
         jj = z_jl.i
         ll = z_jl.j
-        x_ij = self.compute_current_estimate(ii, jj, 'a')
-        x_lk = self.compute_current_estimate(ll, kk, 'b')
+        if not self.optim:
+            x_ij = self.compute_current_estimate(ii, jj, 'a')
+            x_lk = self.compute_current_estimate(ll, kk, 'b')
+        else:
+            x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
+            x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
-        # print(s)
         sigma = self.get_covariance(new_edge)
         return np.matmul(np.matmul(s, np.linalg.inv(sigma)), s.T)[0][0]
 
@@ -100,10 +104,8 @@ class AdjacencyMatrix:
         Compute intra-robot pose and return an Edge object
         Input: Start index and end index of robot_idx
         Output: An Edge object
-        Currently assuming the sequence is the same as the robot measurement
-        sequence. Need to handle the reverse case later.
         """
-        isreversed = (start > end)
+        isreversed = start > end
 
         if robot_idx == 'a':
             odoms = self.graph.odoms[0]
@@ -128,15 +130,15 @@ class AdjacencyMatrix:
     def compute_current_estimate_after_optimization(self, start, end, robot_idx):
         """
         Using the gtsam optimzation info to compute the current estimation
-        Input: Start index and end index of robot_idx
+        Input: Start `node` index and end `node` index of robot_idx
         Output: An Edge object
         """
-        isreversed = start > end
+        start_pose = self.optimized_node_to_virtual_edge(start, robot_idx)
+        end_pose = self.optimized_node_to_virtual_edge(end, robot_idx)
+        trans_pose = self.inverse_compound(start_pose, end_pose, robot_idx)
 
-        if robot_idx == 'a':
-            pass
+        return trans_pose
             
-        pass
 
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """
@@ -152,7 +154,12 @@ class AdjacencyMatrix:
         if robot_idx == 'a':
             pose = self.gtsam_graph1.get_pose(idx)
             cov = self.gtsam_graph1.cov(idx)
-            return
+            info = self.to_info(cov)
+        elif robot_idx == 'b':
+            pose = self.gtsam_graph2.get_pose(idx)
+            cov = self.gtsam_graph2.cov(idx)
+            info = self.to_info(cov)
+        return Edge('w', idx, pose[0], pose[1], pose[2], info)
 
     def inverse_op(self, pose):
         """
@@ -202,6 +209,46 @@ class AdjacencyMatrix:
                             [0, 1, (new_x-x1), np.sin(theta1), np.cos(theta1), 0], \
                             [0, 0, 1, 0, 0, 1]])
 
+        new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
+        new_info = self.to_info(new_cov)
+        return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
+
+    def inverse_compound(self, pose1, pose2, robot_idx):
+        """
+        Compounding two optimized robot poses (Node), by considering covariance and
+        cross covariance of the two poses to be compounded.
+        Input: Two virtual Edge objects, and the robot index 'a' or 'b'
+        Output: An Edge object
+        """
+        pose1_inversed = self.inverse_op(pose1)
+        pose1, pose1_orig = pose1_inversed, pose1
+        if robot_idx == 'a':
+            single_graph = self.gtsam_graph1
+        elif robot_idx == 'b':
+            single_graph = self.gtsam_graph2
+        theta1_o = pose1_orig.theta
+        x1, y1, theta1 = pose1.x, pose1.y, pose1.theta
+        x2, y2, theta2 = pose2.x, pose2.y, pose2.theta
+        new_x = x2*np.cos(theta1) - y2*np.sin(theta1) + x1
+        new_y = x2*np.sin(theta1) + y2*np.cos(theta1) + y1
+        new_theta = theta1 + theta2
+        assert pose1.j == pose2.i == 'w'
+        cov1 = single_graph.cov(pose1.i)
+        cov2 = single_graph.cov(pose2.j)
+        inversed_cross_cov = single_graph.cross_cov(pose1.i, pose2.j)
+        J_minus = np.matrix([[-np.cos(theta1_o), -np.sin(theta1_o), y1], \
+                             [np.sin(theta1_o), -np.cos(theta1_o), -x1], \
+                             [0, 0, -1]])
+        cross_cov = np.matmul(J_minus, inversed_cross_cov)
+        # prev_cov is a 6x6 matrix
+        prev_cov = np.zeros((6, 6))
+        prev_cov[0:3, 0:3] = cov1
+        prev_cov[0:3, 3:6] = cross_cov
+        prev_cov[3:6, 0:3] = cross_cov.T
+        prev_cov[3:6, 3:6] = cov2
+        J_plus = np.matrix([[1, 0, -(new_y-y1), np.cos(theta1), -np.sin(theta1), 0], \
+                            [0, 1, (new_x-x1), np.sin(theta1), np.cos(theta1), 0], \
+                            [0, 0, 1, 0, 0, 1]])
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
         new_info = self.to_info(new_cov)
         return Edge(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
@@ -264,6 +311,6 @@ if __name__ == "__main__":
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    adj = AdjacencyMatrix(multi_graph)
+    adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
     coo_adj_mat = adj.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')
