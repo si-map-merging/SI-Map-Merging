@@ -55,11 +55,11 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                # print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
+                print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    # print("this mahlij for {} is: {}".format((j+1, i+1), mahlji))
+                    print("this mahlij for {} is: {}".format((j+1, i+1), mahlji))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1
@@ -138,7 +138,7 @@ class AdjacencyMatrix:
         trans_pose = self.inverse_compound(start_pose, end_pose, robot_idx)
 
         return trans_pose
-            
+
 
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """
@@ -146,7 +146,7 @@ class AdjacencyMatrix:
         first index is 'w', meaning world. We are estimating from the world frame
         to that node. The reason doing this is to make it easy to use the inverse_op
         and compound_op operations to get new Edge objects.
-        
+
         Input: the index of the pose: idx
                the index of the robot: robot_idx
         Output: an Edge object
