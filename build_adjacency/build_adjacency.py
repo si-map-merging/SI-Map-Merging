@@ -5,23 +5,24 @@ import argparse
 from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
-from process_g2o.utils import SingleRobotGraph2D, Edge2D
-from gtsam_optimize.optimization import Graph2D
+from process_g2o.utils import SingleRobotGraph2D, Edge2D, SingleRobotGraph3D
+from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
 class AdjacencyMatrix:
     """
     The major class for building the adjacency matrix
     """
-    def __init__(self, multi_rob_graph, gamma=3, optim=True):
+    def __init__(self, multi_rob_graph, gamma=3, optim=True, dim2=True):
         self.optim = optim
         self.gamma = gamma
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
-        graph1, graph2 = self.graph.to_singles()
-        self.gtsam_graph1 = Graph2D(graph1)
-        self.gtsam_graph2 = Graph2D(graph2)
+        if optim and dim2:
+            graph1, graph2 = self.graph.to_singles()
+            self.gtsam_graph1 = Graph2D(graph1)
+            self.gtsam_graph2 = Graph2D(graph2)
 
     def single_graphs_optimization(self):
         """
@@ -290,17 +291,33 @@ class AdjacencyMatrix:
                 info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
 
+class AdjacencyMatrix3D(AdjacencyMatrix):
+    """Building adjacency matrix from single 3D pose graphs.
+    """
+    def __init__(self, multi_graph3D, gamma=0.1, optim=True):
+        AdjacencyMatrix.__init__(self, multi_graph3D, optim=optim, dim2=False)
+        if self.optim:
+            graph1, graph2 = self.graph.to_singles()
+            self.gtsam_graph1 = Graph3D(graph1)
+            self.gtsam_graph2 = Graph3D(graph2)
+            print("=========== Single Graphs Optimization for 3D  ==============")
+            self.gtsam_graph1.optimize()
+            self.gtsam_graph2.optimize()
+            self.gtsam_graph1.print_stats()
+            self.gtsam_graph2.print_stats()
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
     parser.add_argument("input_fpath", metavar="city10000.g2o", type=str, nargs='?',
-                        default="datasets/manhattanOlson3500.g2o", help="g2o file path")
+                        default="datasets/parking-garage.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
     args = parser.parse_args()
-
-    graph = SingleRobotGraph()
+    graph = SingleRobotGraph3D()
+    # graph = SingleRobotGraph2D()
     graph.read_from(args.input_fpath)
     print("========== Input g2o Graph Summary ================")
     graph.print_summary()
@@ -310,7 +327,7 @@ if __name__ == "__main__":
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
-    adj.single_graphs_optimization()
-    coo_adj_mat = adj.build_adjacency_matrix()
+    ADJ = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
+    # adj.single_graphs_optimization()
+    coo_adj_mat = ADJ.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')

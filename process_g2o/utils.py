@@ -5,8 +5,8 @@ import random
 import math
 from math import sqrt
 import numpy as np
-import sophus as sp
 import quaternion
+import sophus as sp
 
 
 def in_range(x, range_):
@@ -574,7 +574,7 @@ class MultiRobotGraph3D(MultiRobotGraph):
 
             # Get random quaterion
             r = [random.gauss(mu, sigma) for mu, sigma in zip(r_mu, r_sigma)]
-            R = sp.SO3.exp(r).matrix()
+            R = sp.SO3.exp(np.array(r)).matrix()
             q = Quaternion.from_R(R).q
 
             random_inter_lc[(i, j)] = Edge3D(i, j, t, q, info)
