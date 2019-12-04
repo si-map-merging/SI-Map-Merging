@@ -48,13 +48,11 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                print("The Mah distance for" + '(' +str(i) + ', ' + str(j) +')' + \
-                      "is: " + str(float(mahlij)))
+                # print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    print("The Mah distance for" + '(' +str(j) + ', ' + str(i) +')' + \
-                          "is: " + str(float(mahlji)))
+                    # print("this mahlij for {} is: {}".format((j+1, i+1), mahlji))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1
@@ -86,9 +84,10 @@ class AdjacencyMatrix:
         x_lk = self.compute_current_estimate(ll, kk, 'b')
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
-        s = np.array([new_edge.x, new_edge.y, new_edge.theta])
+        s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
+        # print(s)
         sigma = self.get_covariance(new_edge)
-        return np.dot(np.dot(s.T, np.linalg.inv(sigma)), s)
+        return np.matmul(np.matmul(s, np.linalg.inv(sigma)), s.T)[0][0]
 
     def compute_current_estimate(self, start, end, robot_idx):
         """
