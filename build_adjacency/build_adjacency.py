@@ -55,11 +55,11 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
+                # print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    print("this mahlij for {} is: {}".format((j+1, i+1), mahlji))
+                    # print("this mahlij for {} is: {}".format((j+1, i+1), mahlji))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1

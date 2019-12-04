@@ -57,9 +57,9 @@ if __name__ == "__main__":
     mtx_fpath = "adj.mtx"
     io.mmwrite(mtx_fpath, coo_adj_mat, symmetry='symmetric')
 
-    print("inital lc:\n")
-    for i, edge in enumerate(adj.inter_lc_edges, 1):
-        print("{}: {}".format(i, edge))
+    # print("inital lc:\n")
+    # for i, edge in enumerate(adj.inter_lc_edges, 1):
+    #     print("{}: {}".format(i, edge))
 
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
     fmc_path = "find_max_clique/fmc/src/fmc"
