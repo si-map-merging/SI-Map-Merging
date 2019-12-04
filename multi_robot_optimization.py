@@ -50,8 +50,8 @@ if __name__ == "__main__":
     # Compute Jacobian => Covariances
 
     # Compute consistency matrix
-    adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=False)
-    # adj.single_graphs_optimization()
+    adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
+    adj.single_graphs_optimization()
     # Compute Adjacency matrix
     coo_adj_mat = adj.build_adjacency_matrix()
     mtx_fpath = "adj.mtx"

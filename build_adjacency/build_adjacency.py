@@ -139,7 +139,6 @@ class AdjacencyMatrix:
 
         return trans_pose
 
-
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """
         Convert a post-optimization Node with covariance to a 'virtual Edge'. The
@@ -233,8 +232,8 @@ class AdjacencyMatrix:
         new_y = x2*np.sin(theta1) + y2*np.cos(theta1) + y1
         new_theta = theta1 + theta2
         assert pose1.j == pose2.i == 'w'
-        cov1 = single_graph.cov(pose1.i)
-        cov2 = single_graph.cov(pose2.j)
+        cov1 = self.get_covariance(pose1)  # The inversed pose1's covariance
+        cov2 = self.get_covariance(pose2)
         inversed_cross_cov = single_graph.cross_cov(pose1.i, pose2.j)
         J_minus = np.matrix([[-np.cos(theta1_o), -np.sin(theta1_o), y1], \
                              [np.sin(theta1_o), -np.cos(theta1_o), -x1], \
