@@ -5,7 +5,8 @@ import argparse
 from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
-from process_g2o.utils import SingleRobotGraph2D, Edge2D, SingleRobotGraph3D
+import sophus as sp
+from process_g2o.utils import SingleRobotGraph2D, Edge2D, SingleRobotGraph3D, Edge3D
 from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
@@ -97,8 +98,8 @@ class AdjacencyMatrix:
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
-        sigma = self.get_covariance(new_edge)
-        return np.matmul(np.matmul(s, np.linalg.inv(sigma)), s.T)[0][0]
+        info_mat = self.get_info_mat(new_edge)
+        return np.matmul(np.matmul(s, info_mat, s.T))[0][0]
 
     def compute_current_estimate(self, start, end, robot_idx):
         """
@@ -253,17 +254,24 @@ class AdjacencyMatrix:
         new_info = self.to_info(new_cov)
         return Edge2D(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
-    def get_covariance(self, pose):
-        """
-        Get the covariance matrix given an Edge object
-        Input: An Edge object
-        Output: A numpy array
+    def get_info_mat(self, pose):
+        """Extract information matrix from pose
         """
         info = np.zeros((3, 3))
         info[0, 0:3] = pose.info[0:3]
         info[1, 1:3] = pose.info[3:5]
         info[2, 2] = pose.info[5]
         info_mat = info + info.T - np.diag(info.diagonal())
+        assert self.check_symmetry(info_mat)
+        return info_mat
+
+    def get_covariance(self, pose):
+        """
+        Get the covariance matrix given an Edge object
+        Input: An Edge object
+        Output: A numpy array
+        """
+        info_mat = self.get_info_mat(pose)
         cov_mat = np.linalg.inv(info_mat)
         assert self.check_symmetry(cov_mat)
         return cov_mat
@@ -306,8 +314,91 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             self.gtsam_graph1.print_stats()
             self.gtsam_graph2.print_stats()
 
+    def compute_mahalanobis_distance(self, edge1, edge2):
+        """Compute Mahalanobis distance between two measurements
+        Now edge1 and edge2 are Edge3D objects
+        """
+        z_ik = edge1
+        z_jl = edge2
+        ii = z_ik.i
+        kk = z_ik.j
+        jj = z_jl.i
+        ll = z_jl.j
+        if not self.optim:
+            x_ij = self.compute_current_estimate(ii, jj, 'a')
+            x_lk = self.compute_current_estimate(ll, kk, 'b')
+        else:
+            x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
+            x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+        new_edge = self.compound_op(self.compound_op(self.compound_op( \
+                                    self.inverse_op(z_ik), x_ij), z_jl), x_lk)
+        s = sp.SE3(new_edge.measurement()).log()
+        assert s.shape == (6, 1)
+        return np.matmul(np.matmul(s, new_edge.info_mat()), s.T)
 
+    # def compute_current_estimate_after_optimization(self, start, end, robot_idx):
+    #     """Using the gtsam optimization info to compute the current estimation
+    #     of 3D Pose
+    #     """
+    #     return super().compute_current_estimate_after_optimization(start, end, robot_idx)
 
+    def optimized_node_to_virtual_edge(self, idx, robot_idx):
+        """Convert a Node3D object to (virtual) Edge3D object.
+        Just the same as in the 2D case, setting the first index to 'w'.
+        Input: the index of the pose: idx
+               the index of the robot: robot_idx
+        Output: an Edge3D object
+        """
+        print("You should be calling me!!!")
+        if robot_idx == 'a':
+            translation, quaternion = self.gtsam_graph1.get_pose(idx)
+            cov = self.gtsam_graph1.cov(idx)
+            info = self.to_info(cov)
+        elif robot_idx == 'b':
+            translation, quaternion = self.gtsam_graph2.get_pose(idx)
+            cov = self.gtsam_graph2.cov(idx)
+            info = self.to_info(cov)
+        return Edge3D('w', idx, translation, quaternion, info)
+
+    def inverse_op(self, pose):
+        """Compute x_ji given x_ij in the 3D case.
+        Input: Edge3D object
+        Output: Edge3D object
+        """
+        pass
+
+    def compound_op(self, pose1, pose2):
+        """Compute pose1 circle+ pose2
+        Input: Two Edge3D objects pose1 and pose2
+        Output: an Edge3D object
+        """
+        pass
+
+    def inverse_compound(self, pose1, pose2, robot_idx):
+        """Compounding operation for two optimzed Node3D objects. Using calculated
+        covariance and cross covariance between the two objects.
+        Input: Two virtual Edge3D objects, robot_idx being 'a' or 'b'
+        Output: an Edge3D object
+        """
+        pass
+
+    @classmethod
+    def to_info(cls, cov):
+        """Convert the covariance matrix to info (21x1 vector in 3D)
+        Input: A covariance matrix (numpy array)
+        Output: A vector
+        """
+        sz = 21                  # size of `info`
+        N = 6                  # size of `info_mat`
+        info = np.zeros([sz,])
+        info_mat = np.linalg.inv(cov)
+        start = 0
+        for i in range(N):
+            info[start: start + N - i] = info_mat[i, i:]
+            start += N - i
+        return info
+
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
