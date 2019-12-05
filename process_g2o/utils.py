@@ -208,7 +208,7 @@ class Edge3D:
         T[:3, 3] = self.t
         return T
 
-    def get_R:
+    def get_R(self):
         R = Quaternion.to_R(self.q)
         return R
 
