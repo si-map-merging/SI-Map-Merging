@@ -49,6 +49,21 @@ class Quaternion:
         qu = quaternion.from_float_array(quat)
         return quaternion.as_rotation_matrix(qu)
 
+    @staticmethod
+    def to_zyz(q):
+        """
+        Args:
+            q: numpy array in (x, y, z, w) form
+        Return:
+            phi, theta, psi
+                that are the ZYZ euler angles of the rotation
+        """
+        q_copy = np.asarray(q)
+        quat = np.hstack( (q_copy[3:], q_copy[:3]) )
+        qu = quaternion.from_float_array(quat)
+        angles = quaternion.as_euler_angles(qu)
+        return angles[0], angles[1], angles[2]
+
 
 class Node2D:
     """Node of a 2D graph, representing a pose
@@ -192,6 +207,15 @@ class Edge3D:
         T[:3, :3] = R
         T[:3, 3] = self.t
         return T
+
+    def get_zyz(self):
+        """
+        Return:
+            phi, theta, psi
+                that are the ZYZ euler angles of the rotation
+        """
+        return Quaternion.to_zyz(self.q)
+
 
 class SingleRobotGraph:
     """Single robot graph representation of g2o file
