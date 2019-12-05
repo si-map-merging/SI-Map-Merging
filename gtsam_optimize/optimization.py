@@ -163,16 +163,24 @@ class Graph3D(Graph):
             initial_estimates.insert(node.id_, gtsam.Pose3(node.pose()))
         self.initial = initial_estimates
 
+    def get_pose(self, idx):
+        """After optimization, extract the pose of index idx
+
+        Return:
+            pose as [translation quaternion]
+        """
+        pose = self.result.atPose3(idx)
+        return [pose.translation().vector(), pose.rotation().quaternion()]
 
 if __name__ == "__main__":
     import sys
     sys.path.append("../")
     from process_g2o.utils import SingleRobotGraph3D, SingleRobotGraph2D
 
-    is_3D = False
+    is_3D = True
     if is_3D:
         srg = SingleRobotGraph3D()
-        srg.read_from("../datasets/parking-garage.g2o")
+        srg.read_from("datasets/parking-garage.g2o")
         gtsam_graph = Graph3D(srg)
     else:
         srg = SingleRobotGraph2D()
@@ -183,7 +191,7 @@ if __name__ == "__main__":
     gtsam_graph.optimize()
     print("======= Manhattan Graph Optimization =========")
     gtsam_graph.print_stats()
-
+    pose = gtsam_graph.get_pose(39)
     i = 0
     print("======= Covariance of Node {} ===========".format(i))
     print(gtsam_graph.cov(i))
