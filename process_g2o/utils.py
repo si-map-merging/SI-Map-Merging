@@ -208,6 +208,10 @@ class Edge3D:
         T[:3, 3] = self.t
         return T
 
+    def get_R:
+        R = Quaternion.to_R(self.q)
+        return R
+
     def get_zyz(self):
         """
         Return:
