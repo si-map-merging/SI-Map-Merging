@@ -6,7 +6,7 @@ from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
 import sophus as sp
-from process_g2o.utils import SingleRobotGraph2D, Edge2D, SingleRobotGraph3D, Edge3D
+from process_g2o.utils import SingleRobotGraph2D, Edge2D, SingleRobotGraph3D, Edge3D, Quaternion
 from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
@@ -332,7 +332,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
-        s = sp.SE3(new_edge.measurement()).log()
+        s = sp.SE3(new_edge.measurement()).log()  # check this, heed sequence
         assert s.shape == (6, 1)
         return np.matmul(np.matmul(s, new_edge.info_mat()), s.T)
 
@@ -365,14 +365,120 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         Input: Edge3D object
         Output: Edge3D object
         """
-        pass
+        T_inv = sp.SE3(pose.measurement()).inverse()
+        R_inv = T_inv.rotationMatrix()
+        q_inv = Quaternion.from_R(R_inv).q
+        t_inv = T_inv.translation().flatten()  # [[],[],[]]
+        J_minus = self.compute_J_minus(pose)
+        new_cov = np.matmul(np.matmul(J_minus, pose.cov()), J_minus.T)
+        new_info = self.to_info(new_cov)
+        return Edge3D(pose.j, pose.i, t_inv, q_inv, new_info)
 
-    def compound_op(self, pose1, pose2):
+    @classmethod
+    def compute_J_minus(cls, pose):
+        """Return the J_minus matrix for pose
+        """
+        T_inv = sp.SE3(pose.measurement()).inverse()
+        # R_inv = T_inv.rotationMatrix()
+        # q_inv = Quaternion.from_R(R_inv).q
+        t_inv = T_inv.translation().flatten()  # [[],[],[]]
+        x_, y_, _ = t_inv
+        R = pose.get_R()
+        phi, theta, psi = pose.get_zyz()
+        x, y, z = pose.t
+        n_x, n_y, n_z = R[:, 0]
+        o_x, o_y, o_z = R[:, 1]
+        a_x, a_y, a_z = R[:, 2]
+        Q = np.matrix([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
+        N = np.matrix([[n_y*x-n_x*y, -n_z*x*np.cos(phi)-n_z*y*np.sin(phi)+z*np.cos(theta)*np.cos(psi), y_],
+                       [o_y*x-o_x*y, -o_z*x*np.cos(phi)-o_z*y*np.sin(phi)-z*np.cos(theta)*np.sin(psi), -x_],
+                       [a_y*x-a_x*y, -a_z*x*np.cos(phi)-a_z*y*np.sin(phi)+z*np.sin(theta), 0]])
+        J_minus = np.zeros((9, 9))
+        J_minus[0:3, 0:3] = -R.T
+        J_minus[0:3, 3:] = N
+        J_minus[3:, 3:] = Q
+        return J_minus
+
+    def compound_op(self, pose1, pose2, robot_idx=None, measurement=False):
         """Compute pose1 circle+ pose2
-        Input: Two Edge3D objects pose1 and pose2
+        Input: Two Edge3D objects pose1 and pose2, measurement is a tag indifying whether
+        the two poses are robot poses or measurements
         Output: an Edge3D object
         """
-        pass
+        assert pose1.j == pose2.i
+        T1 = pose1.measurement()
+        T2 = pose2.measurement()
+        new_T = np.matmul(T1, T2)
+        new_R = new_T.rotationMatrix()
+        new_q = Quaternion.from_R(new_R).q
+        new_t = new_T.translation().flatten()
+
+        R1 = pose1.get_R()
+        # R2 = pose2.get_R()
+        phi1, theta1, psi1 = pose1.get_zyz()
+        _, theta2, psi2 = pose2.get_zyz()
+        phi3, theta3, psi3 = Quaternion.to_zyz(new_q)
+        x1, y1, z1 = pose1.t
+        x2, y2, z2 = pose2.t
+        x3, y3, z3 = new_t
+        n_x1, n_y1, n_z1 = R1[:, 0]
+        o_x1, o_y1, o_z1 = R1[:, 1]
+
+        M = np.matrix([
+            [-(y3-y1), (z3-z1)*np.cos(phi1), o_x1*x2-n_x1*y2],
+            [x3-x1, (z3-z1)*np.sin(phi1), o_y1*x2-n_y1*y2],
+            [0, -x2*np.cos(theta1)*np.cos(psi1)+y2*np.cos(theta1)*np.sin(psi1)-z2*np.sin(theta1), o_z1*x2-n_z1*y2]])
+        K1 = np.matrix([
+            [1, (np.cos(theta3)*np.sin(phi3-phi1))/np.sin(theta3), (np.sin(theta2)*np.cos(psi3-psi2))/np.sin(theta3)],
+            [0, np.cos(phi3-phi1), np.sin(theta1)*np.sin(psi3-psi2)],
+            [0, np.sin(phi3-phi1)/np.sin(theta3), (np.sin(theta1)*np.cos(phi3-phi1))/np.sin(theta3)]])
+        K2 = np.matrix([
+            [(np.sin(theta2)*np.cos(psi3-psi2))/np.sin(theta3), (np.sin(psi3-psi2))/np.sin(theta3), 0],
+            [np.sin(theta2)*np.sin(psi3-psi2), np.cos(psi3-psi2), 0],
+            [(np.sin(theta1)*np.cos(phi3-phi1))/np.sin(theta3), (np.cos(theta3)*np.sin(psi3-psi2))/np.sin(theta3), 1]])
+        # J_plus is a 6x12 matrix
+        J_plus = np.zeros((6, 12))
+        J_plus[:3, :3] = np.identity(3)
+        J_plus[:3, 3:6] = M
+        J_plus[:3, 6:9] = R1
+        J_plus[3:, 3:6] = K1
+        J_plus[3:, 9:] = K2
+        # prev_cov is a 12x12 matrix
+        prev_cov = np.zeros((12, 12))
+        cov1 = pose1.cov()
+        cov2 = pose2.cov()
+        cross_cov = self.get_cross_cov(pose1, pose2, robot_idx, measurement)
+        if measurement:
+            J_minus_easy = self.compute_J_minus(pose1)
+            J_minus = np.linalg.inv(J_minus_easy)
+            J_minus_hard = self.compute_J_minus(self.inverse_op(pose1))
+            print("Make sure change this later...")
+            assert np.allclose(J_minus, J_minus_hard)
+            cross_cov = np.matmul(J_minus, cross_cov)
+        prev_cov[:6, :6] = cov1
+        prev_cov[:6, 6:] = cross_cov
+        prev_cov[6:, :6] = cross_cov.T
+        prev_cov[6:, 6:] = cov2
+        
+        new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
+        new_info = self.to_info(new_cov)
+        return Edge3D(pose1.i, pose2.j, new_t, new_q, new_info)
+
+    def get_cross_cov(self, pose1, pose2, robot_idx, measurement):
+        """The cross covariance matrix between two measurements. Assuming indenpendence
+        when it comes to measurements, otherwise for odom, need to check the optimization
+        results
+        """
+        if not measurement:
+            return np.zeros((6, 6))
+
+        if robot_idx == 'a':
+            single_graph = self.gtsam_graph1
+        else:
+            single_graph = self.gtsam_graph2
+        assert pose1.j == pose2.i == 'w'
+        inversed_cross_cov = single_graph.cross_cov(pose1.i, pose2.j)
+        return inversed_cross_cov
 
     def inverse_compound(self, pose1, pose2, robot_idx):
         """Compounding operation for two optimzed Node3D objects. Using calculated
@@ -380,7 +486,10 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         Input: Two virtual Edge3D objects, robot_idx being 'a' or 'b'
         Output: an Edge3D object
         """
-        pass
+        # Do inversing operation to pose1
+        pose1_inversed = self.inverse_op(pose1)
+        new_edge = self.compound_op(pose1_inversed, pose2, robot_idx, True)
+        return new_edge
 
     @classmethod
     def to_info(cls, cov):
@@ -398,7 +507,6 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             start += N - i
         return info
 
-    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
