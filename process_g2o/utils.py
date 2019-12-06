@@ -107,7 +107,7 @@ class Node3D:
         """Return a string representing the node in g2o format
         """
         line = "VERTEX_SE3:QUAT {} ".format(self.id_)
-        line += " ".join([str(x) for x in self.t])
+        line += " ".join([str(x) for x in self.t]) + " "
         line += " ".join([str(x) for x in self.q])
         return line
 
@@ -578,6 +578,40 @@ class MultiRobotGraph2D(MultiRobotGraph):
 class MultiRobotGraph3D(MultiRobotGraph):
     """3D Multi robot graph
     """
+    def _process_line(self, line):
+        """Process g2o line
+        """
+        values = line.split()
+        tag = values[0]
+        if tag == "VERTEX_SE3:QUAT":
+            id_ = int(values[1])
+            pos = [float(v) for v in values[2:5]]
+            quat = [float(v) for v in values[5:]]
+            for idx, range_ in enumerate(self.ranges):
+                if in_range(id_, range_):
+                    self.nodes[idx][id_] = Node3D(id_, pos, quat)
+                    break
+        elif tag == "EDGE_SE3:QUAT":
+            i, j = [int(x) for x in values[1:3]]
+            translation = [float(v) for v in values[3:6]]
+            quat = [float(v) for v in values[6:10]]
+            info = [float(v) for v in values[10:]]
+            edge = Edge3D(i, j, translation, quat, info)
+
+            found = False
+            for idx, nodes in enumerate(self.nodes):
+                if i in nodes and j in nodes:
+                    if abs(i-j) == 1:
+                        self.odoms[idx][(i, j)] = edge
+                    else:
+                        self.lc[idx][(i, j)] = edge
+                    found = True
+                    break
+            if not found:
+                self.inter_lc[(i, j)] = edge
+        else:
+            raise Exception("Line with unknown tag")
+
     def add_random_inter_lc(self, N=20):
         """Add randomly generated inter loop closures
 
