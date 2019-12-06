@@ -389,6 +389,8 @@ class MultiRobotGraph:
         """Process meta info of multi robot g2o
         """
         line = fp.readline()
+        __import__("pdb").set_trace()
+
         while line.startswith("#Robot"):
             values = line.split()
             robot_idx = int(values[1])
@@ -585,6 +587,8 @@ class MultiRobotGraph3D(MultiRobotGraph):
         tag = values[0]
         if tag == "VERTEX_SE3:QUAT":
             id_ = int(values[1])
+            __import__("pdb").set_trace()
+
             pos = [float(v) for v in values[2:5]]
             quat = [float(v) for v in values[5:]]
             for idx, range_ in enumerate(self.ranges):

@@ -322,14 +322,48 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         kk = z_ik.j
         jj = z_jl.i
         ll = z_jl.j
+            
         if not self.optim:
             x_ij = self.compute_current_estimate(ii, jj, 'a')
             x_lk = self.compute_current_estimate(ll, kk, 'b')
         else:
-            x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
-            x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
-        new_edge = self.compound_op(self.compound_op(self.compound_op( \
-                                    self.inverse_op(z_ik), x_ij), z_jl), x_lk)
+            if kk != ll and ii != jj:
+                x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
+                x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+            else:               # two loop closures coincide
+                if kk == ll:
+                    x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
+                elif ii == jj:
+                    x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+
+        # for debug
+        try:
+            if kk != ll and ii != jj:
+                new_edge = self.compound_op(self.compound_op(self.compound_op( \
+                                            self.inverse_op(z_ik), x_ij), z_jl), x_lk)
+            else:
+                if kk == ll:
+                    new_edge = self.compound_op(self.compound_op( \
+                        self.inverse_op(z_ik), x_ij), z_jl)
+                elif ii == jj:
+                    new_edge = self.compound_op(self.compound_op( \
+                        self.inverse_op(z_ik), z_jl), x_lk)
+
+        except AssertionError:
+            print('z_ik index: ' + str(z_ik.i) + ' ' + str(z_ik.j))
+            print('z_jl index: ' + str(z_jl.i) + ' ' + str(z_jl.j))
+        # try:
+        #     inv = self.inverse_op(z_ik)
+        #     new_edge1 = self.compound_op(inv, x_ij)
+        #     new_edge2 = self.compound_op(new_edge1, z_jl)
+        #     new_edge3 = self.compound_op(new_edge2, x_lk)
+        #     new_edge = new_edge3
+        # except AssertionError:
+        #     __import__("pdb").set_trace()
+        #     print('z_ik index: ' + str(z_ik.i) + ' ' + str(z_ik.j))
+        #     print('z_jl index: ' + str(z_jl.i) + ' ' + str(z_jl.j))
+            
+
         s = sp.SE3(new_edge.measurement()).log().flatten()  # check this, heed sequence
 
         return np.matmul(np.matmul(s, new_edge.info_mat()), s.T)
