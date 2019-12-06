@@ -195,6 +195,7 @@ class Edge3D:
             info_mat[i, i:] = self.info[start: start + N-i]
             start += N-i
         info_mat = info_mat + info_mat.T - np.diag(info_mat.diagonal())
+
         assert(np.allclose(info_mat, info_mat.T))
         return info_mat
 

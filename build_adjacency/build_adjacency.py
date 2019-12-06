@@ -24,16 +24,13 @@ class AdjacencyMatrix:
             graph1, graph2 = self.graph.to_singles()
             self.gtsam_graph1 = Graph2D(graph1)
             self.gtsam_graph2 = Graph2D(graph2)
+            # Single graphs optimization
+            print("=========== 2D Single Graphs Optimization ==============")
+            self.gtsam_graph1.optimize()
+            self.gtsam_graph2.optimize()
+            self.gtsam_graph1.print_stats()
+            self.gtsam_graph2.print_stats()
 
-    def single_graphs_optimization(self):
-        """
-        Optimize the single robot graphs using gtsam, see optimization.py
-        """
-        print("=========== Single Graphs Optimization ==============")
-        self.gtsam_graph1.optimize()
-        self.gtsam_graph2.optimize()
-        self.gtsam_graph1.print_stats()
-        self.gtsam_graph2.print_stats()
 
     def get_trusted_lc(self, indices):
         """Get trusted loop closure edges
@@ -137,6 +134,7 @@ class AdjacencyMatrix:
         """
         start_pose = self.optimized_node_to_virtual_edge(start, robot_idx)
         end_pose = self.optimized_node_to_virtual_edge(end, robot_idx)
+        assert end_pose.i != end_pose.j
         trans_pose = self.inverse_compound(start_pose, end_pose, robot_idx)
 
         return trans_pose
@@ -308,7 +306,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             graph1, graph2 = self.graph.to_singles()
             self.gtsam_graph1 = Graph3D(graph1)
             self.gtsam_graph2 = Graph3D(graph2)
-            print("=========== Single Graphs Optimization for 3D  ==============")
+            print("=========== 3D Single Graphs Optimization  ==============")
             self.gtsam_graph1.optimize()
             self.gtsam_graph2.optimize()
             self.gtsam_graph1.print_stats()
@@ -332,8 +330,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
-        s = sp.SE3(new_edge.measurement()).log()  # check this, heed sequence
-        assert s.shape == (6, 1)
+        s = sp.SE3(new_edge.measurement()).log().flatten()  # check this, heed sequence
+
         return np.matmul(np.matmul(s, new_edge.info_mat()), s.T)
 
     # def compute_current_estimate_after_optimization(self, start, end, robot_idx):
@@ -349,7 +347,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
                the index of the robot: robot_idx
         Output: an Edge3D object
         """
-        print("You should be calling me!!!")
+        # print("You should be calling me!!!")
         if robot_idx == 'a':
             translation, quaternion = self.gtsam_graph1.get_pose(idx)
             cov = self.gtsam_graph1.cov(idx)
@@ -393,13 +391,13 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         N = np.matrix([[n_y*x-n_x*y, -n_z*x*np.cos(phi)-n_z*y*np.sin(phi)+z*np.cos(theta)*np.cos(psi), y_],
                        [o_y*x-o_x*y, -o_z*x*np.cos(phi)-o_z*y*np.sin(phi)-z*np.cos(theta)*np.sin(psi), -x_],
                        [a_y*x-a_x*y, -a_z*x*np.cos(phi)-a_z*y*np.sin(phi)+z*np.sin(theta), 0]])
-        J_minus = np.zeros((9, 9))
+        J_minus = np.zeros((6, 6))
         J_minus[0:3, 0:3] = -R.T
         J_minus[0:3, 3:] = N
         J_minus[3:, 3:] = Q
         return J_minus
 
-    def compound_op(self, pose1, pose2, robot_idx=None, measurement=False):
+    def compound_op(self, pose1, pose2, robot_idx=None, odom=False):
         """Compute pose1 circle+ pose2
         Input: Two Edge3D objects pose1 and pose2, measurement is a tag indifying whether
         the two poses are robot poses or measurements
@@ -409,9 +407,9 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         T1 = pose1.measurement()
         T2 = pose2.measurement()
         new_T = np.matmul(T1, T2)
-        new_R = new_T.rotationMatrix()
+        new_R = new_T[:3, :3]
         new_q = Quaternion.from_R(new_R).q
-        new_t = new_T.translation().flatten()
+        new_t = new_T[:3, 3]
 
         R1 = pose1.get_R()
         # R2 = pose2.get_R()
@@ -447,13 +445,19 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         prev_cov = np.zeros((12, 12))
         cov1 = pose1.cov()
         cov2 = pose2.cov()
-        cross_cov = self.get_cross_cov(pose1, pose2, robot_idx, measurement)
-        if measurement:
+        cross_cov = self.get_cross_cov(pose1, pose2, robot_idx, odom)
+        if odom:
             J_minus_easy = self.compute_J_minus(pose1)
             J_minus = np.linalg.inv(J_minus_easy)
-            J_minus_hard = self.compute_J_minus(self.inverse_op(pose1))
-            print("Make sure change this later...")
-            assert np.allclose(J_minus, J_minus_hard)
+            # print("J_minus_easy: \n")
+            # print(J_minus_easy)
+            # print("J_minus: \n")
+            # print(J_minus)
+            # J_minus_hard = self.compute_J_minus(self.inverse_op(pose1))
+            # print("J_minus_hard: \n")
+            # print(J_minus_hard)
+            # print("Make sure change this later...")
+            # assert np.allclose(J_minus, J_minus_hard)
             cross_cov = np.matmul(J_minus, cross_cov)
         prev_cov[:6, :6] = cov1
         prev_cov[:6, 6:] = cross_cov
@@ -514,9 +518,14 @@ if __name__ == "__main__":
                         default="datasets/parking-garage.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
+    parser.add_argument("dim", metavar="int", type=int, nargs='?', default=3,
+                        help="Using 2D or 3D pose graph")
     args = parser.parse_args()
-    graph = SingleRobotGraph3D()
-    # graph = SingleRobotGraph2D()
+    if args.dim == 3:
+        graph = SingleRobotGraph3D()
+    elif args.dim == 2:
+        graph = SingleRobotGraph2D()
+
     graph.read_from(args.input_fpath)
     print("========== Input g2o Graph Summary ================")
     graph.print_summary()
@@ -525,8 +534,10 @@ if __name__ == "__main__":
     multi_graph.add_random_inter_lc()
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
-
-    ADJ = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
+    if args.dim == 3:
+        ADJ = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
+    elif args.dim == 2:
+        ADJ = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
     # adj.single_graphs_optimization()
     coo_adj_mat = ADJ.build_adjacency_matrix()
-    io.mmwrite(args.output_fpath, coo_adj_mat, symmetry='symmetric')
+    io.mmwrite(args.output_fpath, coo_adj_mat, field='integer', symmetry='symmetric')

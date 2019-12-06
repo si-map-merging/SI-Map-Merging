@@ -10,7 +10,7 @@ from scipy import io
 from process_g2o.utils import MultiRobotGraph2D, MultiRobotGraph3D
 from find_max_clique.find_max_clique import find_max_clique
 from gtsam_optimize import optimization
-from build_adjacency.build_adjacency import AdjacencyMatrix
+from build_adjacency.build_adjacency import AdjacencyMatrix, AdjacencyMatrix3D
 
 
 if __name__ == "__main__":
@@ -50,12 +50,14 @@ if __name__ == "__main__":
     #     gtsam_graph.print_stats()
 
     # Compute consistency matrix
-    adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
-    adj.single_graphs_optimization()
+    if args.is_3D:
+        adj = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
+    else:
+        adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
     # Compute Adjacency matrix
     coo_adj_mat = adj.build_adjacency_matrix()
     mtx_fpath = "adj.mtx"
-    io.mmwrite(mtx_fpath, coo_adj_mat, symmetry='symmetric')
+    io.mmwrite(mtx_fpath, coo_adj_mat, field='integer', symmetry='symmetric')
 
     # print("inital lc:\n")
     # for i, edge in enumerate(adj.inter_lc_edges, 1):
