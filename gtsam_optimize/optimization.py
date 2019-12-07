@@ -170,7 +170,7 @@ class Graph3D(Graph):
             pose as [translation quaternion]
         """
         pose = self.result.atPose3(idx)
-        return [pose.translation().vector(), pose.rotation().quaternion()]
+        return [pose.translation().vector(), pose.rotation().matrix()]
 
 if __name__ == "__main__":
     import sys

@@ -23,3 +23,5 @@ process_g2o/*.g2o
 /*.g2o
 /*.mtx
 gtsam_optimize/*.g2o
+
+debug.txt

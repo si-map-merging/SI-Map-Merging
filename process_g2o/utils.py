@@ -10,8 +10,7 @@ import sophus as sp
 
 
 def in_range(x, range_):
-    return x >= range_[0] and x <= range_[1]
-
+    return range_[0] <= x <= range_[1]
 
 def get_upper_triangle(matrix):
     """Get the upper triangular part of the matrix
@@ -290,7 +289,7 @@ class SingleRobotGraph2D(SingleRobotGraph):
             info = [float(v) for v in values[6:]]
             edge = Edge2D(i, j, x, y, theta, info)
             if abs(i-j) == 1:
-                self.odom_edges[(i, j)]  = edge
+                self.odom_edges[(i, j)] = edge
             else:
                 self.loop_closure_edges[(i, j)] = edge
         else:

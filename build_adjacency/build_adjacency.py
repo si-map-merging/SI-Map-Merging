@@ -6,7 +6,7 @@ from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
 import sophus as sp
-from process_g2o.utils import SingleRobotGraph2D, Edge2D, SingleRobotGraph3D, Edge3D, Quaternion
+from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, Edge3D, Quaternion
 from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
@@ -322,7 +322,6 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         kk = z_ik.j
         jj = z_jl.i
         ll = z_jl.j
-            
         if not self.optim:
             x_ij = self.compute_current_estimate(ii, jj, 'a')
             x_lk = self.compute_current_estimate(ll, kk, 'b')
@@ -362,9 +361,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         #     __import__("pdb").set_trace()
         #     print('z_ik index: ' + str(z_ik.i) + ' ' + str(z_ik.j))
         #     print('z_jl index: ' + str(z_jl.i) + ' ' + str(z_jl.j))
-            
 
-        s = sp.SE3(new_edge.measurement()).log().flatten()  # check this, heed sequence
+        s = sp.SE3(new_edge.measurement()).log().flatten()  # # check this, heed sequence
 
         return np.matmul(np.matmul(s, new_edge.info_mat()), s.T)
 
@@ -381,16 +379,15 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
                the index of the robot: robot_idx
         Output: an Edge3D object
         """
-        # print("You should be calling me!!!")
         if robot_idx == 'a':
-            translation, quaternion = self.gtsam_graph1.get_pose(idx)
+            translation, R = self.gtsam_graph1.get_pose(idx)
             cov = self.gtsam_graph1.cov(idx)
             info = self.to_info(cov)
         elif robot_idx == 'b':
-            translation, quaternion = self.gtsam_graph2.get_pose(idx)
+            translation, R = self.gtsam_graph2.get_pose(idx)
             cov = self.gtsam_graph2.cov(idx)
             info = self.to_info(cov)
-        return Edge3D('w', idx, translation, quaternion, info)
+        return Edge3D('w', idx, translation, Quaternion.from_R(R).q, info)
 
     def inverse_op(self, pose):
         """Compute x_ji given x_ij in the 3D case.
@@ -400,7 +397,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         T_inv = sp.SE3(pose.measurement()).inverse()
         R_inv = T_inv.rotationMatrix()
         q_inv = Quaternion.from_R(R_inv).q
-        t_inv = T_inv.translation().flatten()  # [[],[],[]]
+        t_inv = T_inv.translation().flatten()  # [[],[],[]]->[,,]
         J_minus = self.compute_J_minus(pose)
         new_cov = np.matmul(np.matmul(J_minus, pose.cov()), J_minus.T)
         new_info = self.to_info(new_cov)
@@ -413,7 +410,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         T_inv = sp.SE3(pose.measurement()).inverse()
         # R_inv = T_inv.rotationMatrix()
         # q_inv = Quaternion.from_R(R_inv).q
-        t_inv = T_inv.translation().flatten()  # [[],[],[]]
+        t_inv = T_inv.translation().flatten()  # [[],[],[]]->[,,]
         x_, y_, _ = t_inv
         R = pose.get_R()
         phi, theta, psi = pose.get_zyz()
@@ -460,10 +457,12 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             [-(y3-y1), (z3-z1)*np.cos(phi1), o_x1*x2-n_x1*y2],
             [x3-x1, (z3-z1)*np.sin(phi1), o_y1*x2-n_y1*y2],
             [0, -x2*np.cos(theta1)*np.cos(psi1)+y2*np.cos(theta1)*np.sin(psi1)-z2*np.sin(theta1), o_z1*x2-n_z1*y2]])
+
         K1 = np.matrix([
             [1, (np.cos(theta3)*np.sin(phi3-phi1))/np.sin(theta3), (np.sin(theta2)*np.cos(psi3-psi2))/np.sin(theta3)],
             [0, np.cos(phi3-phi1), np.sin(theta1)*np.sin(psi3-psi2)],
             [0, np.sin(phi3-phi1)/np.sin(theta3), (np.sin(theta1)*np.cos(phi3-phi1))/np.sin(theta3)]])
+
         K2 = np.matrix([
             [(np.sin(theta2)*np.cos(psi3-psi2))/np.sin(theta3), (np.sin(psi3-psi2))/np.sin(theta3), 0],
             [np.sin(theta2)*np.sin(psi3-psi2), np.cos(psi3-psi2), 0],
@@ -497,22 +496,22 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         prev_cov[:6, 6:] = cross_cov
         prev_cov[6:, :6] = cross_cov.T
         prev_cov[6:, 6:] = cov2
-        
+
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
         new_info = self.to_info(new_cov)
         return Edge3D(pose1.i, pose2.j, new_t, new_q, new_info)
 
-    def get_cross_cov(self, pose1, pose2, robot_idx, measurement):
+    def get_cross_cov(self, pose1, pose2, robot_idx, odom):
         """The cross covariance matrix between two measurements. Assuming indenpendence
         when it comes to measurements, otherwise for odom, need to check the optimization
         results
         """
-        if not measurement:
+        if not odom:
             return np.zeros((6, 6))
 
         if robot_idx == 'a':
             single_graph = self.gtsam_graph1
-        else:
+        elif robot_idx == 'b':
             single_graph = self.gtsam_graph2
         assert pose1.j == pose2.i == 'w'
         inversed_cross_cov = single_graph.cross_cov(pose1.i, pose2.j)
@@ -529,8 +528,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         new_edge = self.compound_op(pose1_inversed, pose2, robot_idx, True)
         return new_edge
 
-    @classmethod
-    def to_info(cls, cov):
+    def to_info(self, cov):
         """Convert the covariance matrix to info (21x1 vector in 3D)
         Input: A covariance matrix (numpy array)
         Output: A vector
@@ -539,6 +537,12 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
         info_mat = np.linalg.inv(cov)
+        try:
+            assert self.check_symmetry(info_mat)
+        except AssertionError:
+            # __import__("pdb").set_trace()
+            # print("info matrix becomes asymmetric")
+            pass
         start = 0
         for i in range(N):
             info[start: start + N - i] = info_mat[i, i:]
@@ -549,29 +553,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
     parser.add_argument("input_fpath", metavar="city10000.g2o", type=str, nargs='?',
-                        default="datasets/parking-garage.g2o", help="g2o file path")
+                        default="process_g2o/output.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
     parser.add_argument("dim", metavar="int", type=int, nargs='?', default=3,
                         help="Using 2D or 3D pose graph")
     args = parser.parse_args()
     if args.dim == 3:
-        graph = SingleRobotGraph3D()
+        graph = MultiRobotGraph3D()
     elif args.dim == 2:
-        graph = SingleRobotGraph2D()
+        graph = MultiRobotGraph2D()
 
     graph.read_from(args.input_fpath)
-    print("========== Input g2o Graph Summary ================")
     graph.print_summary()
-
-    multi_graph = graph.to_multi()
-    multi_graph.add_random_inter_lc()
     print("========== Multi Robot g2o Graph Summary ================")
-    multi_graph.print_summary()
+    graph.print_summary()
     if args.dim == 3:
-        ADJ = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
+        ADJ = AdjacencyMatrix3D(graph, gamma=0.1, optim=True)
     elif args.dim == 2:
-        ADJ = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
+        ADJ = AdjacencyMatrix(graph, gamma=0.1, optim=True)
     # adj.single_graphs_optimization()
     coo_adj_mat = ADJ.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, field='integer', symmetry='symmetric')

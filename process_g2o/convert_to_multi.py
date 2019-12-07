@@ -34,7 +34,7 @@ if __name__ == "__main__":
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
-    multi_graph.add_random_inter_lc(N=10)
+    multi_graph.add_random_inter_lc(N=20)
     print("========== Noisy Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
     multi_graph.write_to(args.output_fpath)
