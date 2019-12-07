@@ -13,11 +13,11 @@ def find_max_clique(fmc_path, input_fpath, heuristic=True):
     Returns:
         nodes: sorted indices of the max clique nodes
     """
-    command = fmc_path + " " + input_fpath + " -p"
+    command = fmc_path + " -p "
     algorithm_type = 0
     if heuristic:
         algorithm_type = 1
-    command += " -t {}".format(algorithm_type)
+    command += " -t {} ".format(algorithm_type) + input_fpath
     output = os.popen(command).read()
 
     nodes = []
