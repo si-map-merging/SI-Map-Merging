@@ -400,6 +400,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         t_inv = T_inv.translation().flatten()  # [[],[],[]]->[,,]
         J_minus = self.compute_J_minus(pose)
         new_cov = np.matmul(np.matmul(J_minus, pose.cov()), J_minus.T)
+        # __import__("pdb").set_trace()
+        assert self.check_symmetry(np.linalg.inv(new_cov))
         new_info = self.to_info(new_cov)
         return Edge3D(pose.j, pose.i, t_inv, q_inv, new_info)
 
@@ -413,11 +415,17 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         t_inv = T_inv.translation().flatten()  # [[],[],[]]->[,,]
         x_, y_, _ = t_inv
         R = pose.get_R()
-        phi, theta, psi = pose.get_zyz()
+        phi, theta, psi = pose.get_zyz()  # verify this
         x, y, z = pose.t
         n_x, n_y, n_z = R[:, 0]
         o_x, o_y, o_z = R[:, 1]
         a_x, a_y, a_z = R[:, 2]
+        # x_ = -(n_x*x + n_y*y + n_z*z)
+        # y_ = -(o_x*x + o_y*y + o_z*z)
+        # z_ = -(a_x*x + a_y*y + a_z*z)
+        # t_inv_manual = np.asarray([x_, y_, z_])
+        # __import__("pdb").set_trace()
+        # assert t_inv_manual.all() == t_inv.all()
         Q = np.matrix([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
         N = np.matrix([[n_y*x-n_x*y, -n_z*x*np.cos(phi)-n_z*y*np.sin(phi)+z*np.cos(theta)*np.cos(psi), y_],
                        [o_y*x-o_x*y, -o_z*x*np.cos(phi)-o_z*y*np.sin(phi)-z*np.cos(theta)*np.sin(psi), -x_],
@@ -541,8 +549,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             assert self.check_symmetry(info_mat)
         except AssertionError:
             # __import__("pdb").set_trace()
-            # print("info matrix becomes asymmetric")
-            pass
+            print("info matrix becomes asymmetric")
+            # pass
         start = 0
         for i in range(N):
             info[start: start + N - i] = info_mat[i, i:]
