@@ -4,6 +4,7 @@
 import random
 import math
 from math import sqrt
+from scipy.linalg import solve
 import numpy as np
 import quaternion
 import sophus as sp
@@ -21,6 +22,15 @@ def get_upper_triangle(matrix):
     assert(M == N)
     return matrix[np.triu_indices(M)]
 
+def cholesky_inverse(matrix):
+    """Get the inverse of a positive definite matrix
+    Return:
+         numpy array
+    """
+    L = np.linalg.cholesky(matrix)
+    inv = np.identity(np.size(matrix, 0))
+    inv = solve(L, inv, lower=True, overwrite_b=True, assume_a='pos')
+    return inv
 
 class Quaternion:
     """Convenience wrapper around quaternion library
@@ -219,6 +229,16 @@ class Edge3D:
                 that are the ZYZ euler angles of the rotation
         """
         return Quaternion.to_zyz(self.q)
+
+    def __str__(self):
+        line = "{} {} ".format(self.i, self.j)
+        line += " ".join([str(x) for x in self.t]) + " "
+        line += " ".join([str(x) for x in self.q]) + " "
+        line += " ".join([str(x) for x in self.info])
+        return line
+
+    def __repr__(self):
+        return str(self)
 
 
 class SingleRobotGraph:
