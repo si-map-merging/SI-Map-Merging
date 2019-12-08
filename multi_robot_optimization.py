@@ -2,7 +2,7 @@
 optimize the overall graph
 
 Example usages:
-    TODO
+    python3 multi_robot_optimization input.g2o output.g2o
 """
 
 import argparse
@@ -35,19 +35,6 @@ if __name__ == "__main__":
 
     print("========== Multi Robot Graph Summary ==============")
     multi_graph.print_summary()
-
-    # # Separate into two single robot graphs
-    # single_graphs = multi_graph.to_singles()
-    # for i, graph in enumerate(single_graphs):
-    #     print("========== Single Robot {} Graph Summary ===========".format(i))
-    #     graph.print_summary()
-
-    # # Feed graphs to GTSAM
-    # for robot_i, graph in enumerate(single_graphs):
-    #     gtsam_graph = optimization.Graph(graph)
-    #     gtsam_graph.optimize()
-    #     print("===== Single Robot {} Graph Optimization =====".format(robot_i))
-    #     gtsam_graph.print_stats()
 
     # Compute consistency matrix
     if args.is_3D:
