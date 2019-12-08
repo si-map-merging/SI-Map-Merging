@@ -1,8 +1,8 @@
 import numpy as np
 
-'''
+"""
 Implementation of algorithm 2 in TEASER paper
-'''
+"""
 
 def f(s,a,s_hat,c):
     K=len(s)
@@ -13,12 +13,14 @@ def f(s,a,s_hat,c):
 
 
 def adaptive_voting(s,a,c):
-    '''
-    algorithm 2 of TEASER paper
-    Input: s_k, a_k, \bar{c}
-    Output: \hat{s} (Estimation of scale s)
-    '''
-    #Define boundaries and sort
+    """Algorithm 2 of TEASER paper
+
+    Args:
+        s_k, a_k, \bar{c}
+    Return:
+        \hat{s} (Estimation of scale s)
+    """
+    # Define boundaries and sort
     K = len(s)
     v=[]
 
@@ -27,13 +29,12 @@ def adaptive_voting(s,a,c):
         v.append(s[i]+a[i]*c)
     v=sorted(v)
 
-    #Compute middle points
+    # Compute middle points
     m=[]
     for i in range(2*K-1):
-        # m.append((v[2*i]+v[2*i+1])/2.)
         m.append((v[i]+v[i+1])/2.)
 
-    #voting
+    # voting
     S=[]
     for i in range(2*K-1):
         S.append([])
@@ -43,9 +44,7 @@ def adaptive_voting(s,a,c):
             if m[i]<= s[k] + a[k]*c and m[i]>= s[k] - a[k]*c:
                 S[i].append(k)
 
-    #print S
-    #Enumerate consensus sets and return best
-
+    # Enumerate consensus sets and return best
     f_list=[]
     for i in range(2*K-1):
         ww=0.
@@ -54,12 +53,12 @@ def adaptive_voting(s,a,c):
             ww+=1./(a[k]**2)
             ss+=s[k]/(a[k]**2)
         s_est = ss/ww
-        #print S[i],s_est,ww,ss
         f_list.append((s_est,f(s,a,s_est,c)))
 
     #print f_list
     f_list  = sorted(f_list, key=lambda s:s[1])
     return f_list[0][0]
+
 
 if __name__ == '__main__':
     s = [1,2,2.8,3,3.2,4,5]

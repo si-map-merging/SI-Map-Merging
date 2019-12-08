@@ -2,7 +2,7 @@
  * @file OptimizeG2o.cpp
  *
  * @brief Read a g2o file, optimize it, and output as another g2o file
- *        TODO(Jay) Currently assumes 2D, extend to 3D
+ *        TODO Currently assumes 2D, extend to 3D
  *
  * @author Jay Li
  */
@@ -29,17 +29,17 @@ int main(const int argc, const char *argv[]) {
     outputFPath = argv[2];
   }
 
-  // TODO(Jay) parse kernel
+  // TODO: parse kernel
   string kernelType = "none";
 
-  // TODO(Jay) parse maxIteration
+  // TODO: parse maxIteration
   int maxIterations = 100;
 
   // Read file and create factor graph
   NonlinearFactorGraph::shared_ptr graph;
   Values::shared_ptr initial;
   bool is3D = false;
-  // TODO(Jay) Know the difference between different kernels and add them
+  // TODO: Know the difference between different kernels and add them
   assert(kernelType == "none");
   if (kernelType.compare("none") == 0) {
     boost::tie(graph, initial) = readG2o(inputFPath, is3D);
