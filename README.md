@@ -2,6 +2,13 @@
 
 Pairwise Consistent Measurement Set Maximization for Robust Multi-robot Map Merging, where the Scales between Robots are unknown.
 
+## Dependencies
+* GTSAM with python bindings
+* numpy
+* numpy-quaternion
+* sophuspy
+* scipy
+
 ## Setup
 Update your PYTHONPATH environment variable to include the root of the project
 
