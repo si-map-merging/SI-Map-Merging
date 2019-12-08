@@ -14,13 +14,20 @@ class AdjacencyMatrix:
     """
     The major class for building the adjacency matrix
     """
-    def __init__(self, multi_rob_graph, gamma=3, optim=True, dim2=True):
+    def __init__(self, multi_rob_graph, gamma=3, optim=True):
+        """
+        Args:
+            multi_rob_graph: multi-robot graph of type MultiRobotGraph
+            gamma: threshold for checking adjacency
+            optim: whether perform single-robot optimization as a
+                preprocessing step
+        """
         self.optim = optim
         self.gamma = gamma
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
-        if optim and dim2:
+        if optim:
             graph1, graph2 = self.graph.to_singles()
             self.gtsam_graph1 = Graph2D(graph1)
             self.gtsam_graph2 = Graph2D(graph2)
@@ -44,8 +51,8 @@ class AdjacencyMatrix:
         return trusted
 
     def build_adjacency_matrix(self):
-        """
-        The central function in AdjacencyMatrix class.
+        """The central function in AdjacencyMatrix class.
+
         Return: A symmetric matrix whose entries are either 0 or 1
         """
         adjacency_matrix = np.zeros((self.inter_lc_n, self.inter_lc_n))
@@ -77,8 +84,8 @@ class AdjacencyMatrix:
 
     def compute_mahalanobis_distance(self, edge1, edge2):
         """
-        Input: edge1: Edge object
-               edge2: Edge object
+        Args: edge1: Edge object
+              edge2: Edge object
         """
         z_ik = edge1
         z_jl = edge2
@@ -99,10 +106,14 @@ class AdjacencyMatrix:
         return np.matmul(s, np.matmul(info_mat, s.T))[0][0]
 
     def compute_current_estimate(self, start, end, robot_idx):
-        """
-        Compute intra-robot pose and return an Edge object
-        Input: Start index and end index of robot_idx
-        Output: An Edge object
+        """Compute intra-robot pose and return an Edge object
+
+        Args:
+            start: start index
+            end: end index
+            robot_idx: robot index
+        Return:
+            An computed edge from start to end as an Edge object
         """
         isreversed = start > end
 
@@ -127,10 +138,14 @@ class AdjacencyMatrix:
         return trans_pose
 
     def compute_current_estimate_after_optimization(self, start, end, robot_idx):
-        """
-        Using the gtsam optimzation info to compute the current estimation
-        Input: Start `node` index and end `node` index of robot_idx
-        Output: An Edge object
+        """Using the gtsam optimzation info to compute the current estimation
+
+        Args:
+            start: start index
+            end: end index
+            robot_idx: robot index
+        Return:
+            An computed edge from start to end as an Edge object
         """
         start_pose = self.optimized_node_to_virtual_edge(start, robot_idx)
         end_pose = self.optimized_node_to_virtual_edge(end, robot_idx)
@@ -140,15 +155,16 @@ class AdjacencyMatrix:
         return trans_pose
 
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
-        """
-        Convert a post-optimization Node with covariance to a 'virtual Edge'. The
+        """Convert a post-optimization Node with covariance to a 'virtual Edge'. The
         first index is 'w', meaning world. We are estimating from the world frame
         to that node. The reason doing this is to make it easy to use the inverse_op
         and compound_op operations to get new Edge objects.
 
-        Input: the index of the pose: idx
-               the index of the robot: robot_idx
-        Output: an Edge object
+        Args:
+            idx: the index of the pose
+            robot_idx: the index of the robot
+        Return:
+            an Edge object
         """
         if robot_idx == 'a':
             pose = self.gtsam_graph1.get_pose(idx)
@@ -161,10 +177,12 @@ class AdjacencyMatrix:
         return Edge2D('w', idx, pose[0], pose[1], pose[2], info)
 
     def inverse_op(self, pose):
-        """
-        Compute x_ji given x_ij
-        Input: An Edge object
-        Output: An Edge object
+        """Compute x_ji given x_ij
+
+        Args:
+            pose: an Edge object representing the edge from world to pose
+        Return:
+            the inversed Edge object
         """
         x = pose.x
         y = pose.y
@@ -183,10 +201,12 @@ class AdjacencyMatrix:
         return Edge2D(pose.j, pose.i, new_x, new_y, new_theta, new_info)
 
     def compound_op(self, pose1, pose2):
-        """
-        Compute pose1 circle+ pose2
-        Input: Two Edge objects pose1 and pose2
-        Output: An Edge object
+        """Compute pose1 circle+ pose2
+
+        Args:
+            Two Edge objects pose1 and pose2
+        Return:
+            An Edge object
         """
         x1, y1, theta1 = pose1.x, pose1.y, pose1.theta
         x2, y2, theta2 = pose2.x, pose2.y, pose2.theta
@@ -213,11 +233,13 @@ class AdjacencyMatrix:
         return Edge2D(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
     def inverse_compound(self, pose1, pose2, robot_idx):
-        """
-        Compounding two optimized robot poses (Node), by considering covariance and
+        """Compounding two optimized robot poses (Node), by considering covariance and
         cross covariance of the two poses to be compounded.
-        Input: Two virtual Edge objects, and the robot index 'a' or 'b'
-        Output: An Edge object
+
+        Args:
+            Two virtual Edge objects, and the robot index 'a' or 'b'
+        Return:
+            An Edge object
         """
         pose1_inversed = self.inverse_op(pose1)
         pose1, pose1_orig = pose1_inversed, pose1
@@ -264,10 +286,12 @@ class AdjacencyMatrix:
         return info_mat
 
     def get_covariance(self, pose):
-        """
-        Get the covariance matrix given an Edge object
-        Input: An Edge object
-        Output: A numpy array
+        """Get the covariance matrix given an Edge object
+
+        Args:
+            An Edge object
+        Return:
+            A numpy array
         """
         info_mat = self.get_info_mat(pose)
         cov_mat = np.linalg.inv(info_mat)
@@ -276,21 +300,25 @@ class AdjacencyMatrix:
 
     @classmethod
     def get_cross_covariance(cls):
-        """
-        Compute the cross covariance of pose1 and pose2
+        """Compute the cross covariance of pose1 and pose2
         Note: Currently assumming a zero matrix, meaning we assume the measurements
         are independent to each other
-        Input: Two Edge objects pose1 and pose2
-        Output: A numpy matrix
+
+        Args:
+            Two Edge objects pose1 and pose2
+        Return:
+            A numpy matrix
         """
         return np.zeros((3, 3))
 
     @classmethod
     def to_info(cls, cov):
-        """
-        Convert the covariance matrix to info (6x1 vector in 2D)
-        Input: A covariance matrix
-        Output: A vector
+        """Convert the covariance matrix to info (6x1 vector in 2D)
+
+        Args:
+            A covariance matrix
+        Return:
+            A vector
         """
         info_mat = np.linalg.inv(cov)
         info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
@@ -375,9 +403,10 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """Convert a Node3D object to (virtual) Edge3D object.
         Just the same as in the 2D case, setting the first index to 'w'.
-        Input: the index of the pose: idx
+
+        Args: the index of the pose: idx
                the index of the robot: robot_idx
-        Output: an Edge3D object
+        Return: an Edge3D object
         """
         if robot_idx == 'a':
             translation, R = self.gtsam_graph1.get_pose(idx)
@@ -391,8 +420,11 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
 
     def inverse_op(self, pose):
         """Compute x_ji given x_ij in the 3D case.
-        Input: Edge3D object
-        Output: Edge3D object
+
+        Args:
+            Edge3D object
+        Return:
+            Edge3D object
         """
         T_inv = sp.SE3(pose.measurement()).inverse()
         R_inv = T_inv.rotationMatrix()
@@ -438,9 +470,12 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
 
     def compound_op(self, pose1, pose2, robot_idx=None, odom=False):
         """Compute pose1 circle+ pose2
-        Input: Two Edge3D objects pose1 and pose2, measurement is a tag indifying whether
-        the two poses are robot poses or measurements
-        Output: an Edge3D object
+
+        Args:
+            Two Edge3D objects pose1 and pose2, measurement is a tag indifying
+                whether the two poses are robot poses or measurements
+        Return:
+            an Edge3D object
         """
         assert pose1.j == pose2.i
         T1 = pose1.measurement()
@@ -528,8 +563,11 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
     def inverse_compound(self, pose1, pose2, robot_idx):
         """Compounding operation for two optimzed Node3D objects. Using calculated
         covariance and cross covariance between the two objects.
-        Input: Two virtual Edge3D objects, robot_idx being 'a' or 'b'
-        Output: an Edge3D object
+
+        Args:
+            Two virtual Edge3D objects, robot_idx being 'a' or 'b'
+        Return:
+            an Edge3D object
         """
         # Do inversing operation to pose1
         pose1_inversed = self.inverse_op(pose1)
@@ -538,8 +576,11 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
 
     def to_info(self, cov):
         """Convert the covariance matrix to info (21x1 vector in 3D)
-        Input: A covariance matrix (numpy array)
-        Output: A vector
+
+        Args:
+            A covariance matrix (numpy array)
+        Return:
+            A vector
         """
         sz = 21                  # size of `info`
         N = 6                  # size of `info_mat`
