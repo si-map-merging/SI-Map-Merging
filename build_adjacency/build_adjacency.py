@@ -96,7 +96,7 @@ class AdjacencyMatrix:
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
         info_mat = self.get_info_mat(new_edge)
-        return np.matmul(np.matmul(s, info_mat, s.T))[0][0]
+        return np.matmul(s, np.matmul(info_mat, s.T))[0][0]
 
     def compute_current_estimate(self, start, end, robot_idx):
         """
