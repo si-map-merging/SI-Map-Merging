@@ -61,11 +61,11 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                # print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
+                print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    # print("this mahlij for {} is: {}".format((j+1, i+1), mahlji))
+                    print("this mahlji for {} is: {}".format((j+1, i+1), mahlji))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1
@@ -103,7 +103,7 @@ class AdjacencyMatrix:
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
         info_mat = self.get_info_mat(new_edge)
-        return np.matmul(s, np.matmul(info_mat, s.T))[0][0]
+        return np.matmul(np.matmul(s, info_mat), s.T)[0][0]
 
     def compute_current_estimate(self, start, end, robot_idx):
         """Compute intra-robot pose and return an Edge object
@@ -391,7 +391,6 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         #     print('z_jl index: ' + str(z_jl.i) + ' ' + str(z_jl.j))
 
         s = sp.SE3(new_edge.measurement()).log().flatten()  # # check this, heed sequence
-
         return np.matmul(np.matmul(s, new_edge.info_mat()), s.T)
 
     # def compute_current_estimate_after_optimization(self, start, end, robot_idx):
@@ -432,8 +431,11 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         t_inv = T_inv.translation().flatten()  # [[],[],[]]->[,,]
         J_minus = self.compute_J_minus(pose)
         new_cov = np.matmul(np.matmul(J_minus, pose.cov()), J_minus.T)
-        # __import__("pdb").set_trace()
-        assert self.check_symmetry(np.linalg.inv(new_cov))
+        # try:
+        #     assert self.check_symmetry(np.linalg.inv(new_cov))
+        # except AssertionError:
+        #     __import__("pdb").set_trace()
+
         new_info = self.to_info(new_cov)
         return Edge3D(pose.j, pose.i, t_inv, q_inv, new_info)
 
@@ -527,7 +529,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             J_minus = np.linalg.inv(J_minus_easy)
             # print("J_minus_easy: \n")
             # print(J_minus_easy)
-            # print("J_minus: \n")
+            # print("J_minus: \n") 
             # print(J_minus)
             # J_minus_hard = self.compute_J_minus(self.inverse_op(pose1))
             # print("J_minus_hard: \n")
@@ -586,6 +588,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
         info_mat = np.linalg.inv(cov)
+        # sym_info_mat = np.maximum(info_mat, info_mat.transpose())
         try:
             assert self.check_symmetry(info_mat)
         except AssertionError:
@@ -597,6 +600,30 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             info[start: start + N - i] = info_mat[i, i:]
             start += N - i
         return info
+
+    def test_inverse_op(self):
+        """A simple test case for inverse_op function
+        """
+        t = [1, 0, 0]
+        q = [0, 0, 0, 1]
+        cov = np.identity(6)
+        cov[3, 3] = 1e-10
+        cov[4, 4] = 1e-10
+        cov[5, 5] = 1e-10
+        # info_mat = np.linalg.inv(cov)
+        info = self.to_info(cov)
+        edge = Edge3D(1, 2, np.asarray(t), np.asarray(q), info)
+        inv_edge = self.inverse_op(edge)
+        print("The original edge's covariance matrix: \n")
+        print(edge.cov())
+        print("The original edge's info matrix:\n")
+        print(edge.info_mat())
+        print("The inversed edge's covariance matrix: \n")
+        print(inv_edge.cov())
+        print("The inversed edge's info matrix: \n")
+        print(inv_edge.info_mat())
+        __import__("pdb").set_trace()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -622,5 +649,6 @@ if __name__ == "__main__":
     elif args.dim == 2:
         ADJ = AdjacencyMatrix(graph, gamma=0.1, optim=True)
     # adj.single_graphs_optimization()
+    ADJ.test_inverse_op()
     coo_adj_mat = ADJ.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, field='integer', symmetry='symmetric')

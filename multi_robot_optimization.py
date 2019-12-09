@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # Compute consistency matrix
     if args.is_3D:
-        adj = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
+        adj = AdjacencyMatrix3D(multi_graph, gamma=0.0001, optim=True)
     else:
         adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
     # Compute Adjacency matrix
@@ -46,9 +46,9 @@ if __name__ == "__main__":
     mtx_fpath = "adj.mtx"
     io.mmwrite(mtx_fpath, coo_adj_mat, field='integer', symmetry='symmetric')
 
-    # print("inital lc:\n")
-    # for i, edge in enumerate(adj.inter_lc_edges, 1):
-    #     print("{}: {}".format(i, edge))
+    print("inital lc:\n")
+    for i, edge in enumerate(adj.inter_lc_edges, 1):
+        print("{}: {}".format(i, edge))
 
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
     fmc_path = "find_max_clique/fmc/src/fmc"

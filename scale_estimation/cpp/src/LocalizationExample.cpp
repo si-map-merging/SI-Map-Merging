@@ -56,8 +56,7 @@
 #include <gtsam/base/Testable.h>
 #include <gtsam/base/Lie.h>
 
-using namespace std;
-using namespace gtsam;
+
 
 // Before we begin the example, we must create a custom unary factor to implement a
 // "GPS-like" functionality. Because standard GPS measurements provide information
@@ -69,6 +68,7 @@ using namespace gtsam;
 // the NoiseModelFactor1.
 #include <gtsam/nonlinear/NonlinearFactor.h>
 
+namespace gtsam {
 class UnaryFactor: public NoiseModelFactor1<Pose2> {
 
   // The factor will hold a measurement consisting of an (X,Y) location
@@ -178,10 +178,10 @@ public:
       eye_T = eye(size);
       //H_.block< >;
 
-      cout << "x: " << x << endl;
-      cout << "no: " << (x * (model->whiten(x)).transpose()) <<endl<<endl << model->Whiten(eye(size))<<endl<<endl<<nominator<<endl;
-      // cout << "x*x^T: " << x*(x.transpose()) << endl;
-      cout << "H_: " << H_ << endl;
+      // cout << "x: " << x << endl;
+      // cout << "no: " << (x * (model->whiten(x)).transpose()) <<endl<<endl << model->Whiten(eye(size))<<endl<<endl<<nominator<<endl;
+      // // cout << "x*x^T: " << x*(x.transpose()) << endl;
+      // cout << "H_: " << H_ << endl;
   }
 
   virtual ~SIBetweenFactor() {}
@@ -253,7 +253,10 @@ private:
   }
 }; // \class SIBetweenFactor
 
+} /// namespace gtsam
 
+using namespace std;
+using namespace gtsam;
 
 int main(int argc, char** argv) {
 
