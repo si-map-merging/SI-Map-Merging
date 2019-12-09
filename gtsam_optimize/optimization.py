@@ -66,7 +66,7 @@ class Graph:
         key_vec = gtsam.gtsam.KeyVector()
         key_vec.push_back(i)
         key_vec.push_back(j)
-        return self.marginals.jointMarginalCovariance(key_vec).at(j, j)
+        return self.marginals.jointMarginalCovariance(key_vec).at(i, j)
 
     def joint_marginal(self, i, j):
         key_vec = gtsam.gtsam.KeyVector()
