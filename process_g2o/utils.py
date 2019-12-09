@@ -541,59 +541,6 @@ class MultiRobotGraph:
                                                     for x in self.lc]))
         print("# Inter loop closures: {}".format(len(self.inter_lc)))
 
-    def add_perceptual_aliasing_lc(self, M=2, N=5):
-        """Add perceptual aliasing loop closures
-
-        Args:
-            M: number of groups of aliases
-            N: number of loop closures in each group
-        """
-        if M <= 0 or N <= 0:
-            return
-
-        # Random variable parameters
-        x_mu = random.uniform(-5, 5)
-        x_sigma = 0.15
-        y_mu = random.uniform(-5, 5)
-        y_sigma = 0.15
-        theta_mu = random.uniform(-math.pi, math.pi)
-        theta_sigma = 0.15
-
-        # Information matrix
-        info = [1/x_sigma**2, 0, 0, 1/y_sigma**2, 0, 1/theta_sigma**2]
-
-        new_lc = {}
-        for _ in range(M):
-            i = random.choice(list(self.nodes[0]))
-            j = random.choice(list(self.nodes[1]))
-
-            # Random initial lc edge
-            pose_ij = Pose2D.random(x_mu, x_sigma, y_mu, y_sigma, theta_mu,
-                                    theta_sigma)
-            edge = Edge2D.from_pose(i, j, pose_ij, info)
-            new_lc[(i, j)] = edge
-
-            prev_i = i
-            prev_j = j
-            prev_pose_ij = pose_ij
-            for _ in range(N-1):
-                i = random.choice(list(self.nodes[0]))
-                j = random.choice(list(self.nodes[1]))
-
-                pose_i_iprev = self.get_relative(i, prev_i, 0)
-                pose_jprev_j = self.get_relative(prev_j, j, 1)
-
-                # Construct next consistent lc edge
-                pose_ij = pose_i_iprev * prev_pose_ij * pose_jprev_j
-                edge = Edge2D.from_pose(i, j, pose_ij, info)
-                new_lc[(i, j)] = edge
-
-                prev_i = i
-                prev_j = j
-                prev_pose_ij = pose_ij
-
-        self.inter_lc.update(new_lc)
-
     def get_relative(self, i, j, idx):
         """Get relative pose between i and j in robot idx, according to
             pose information contained in nodes
@@ -704,6 +651,59 @@ class MultiRobotGraph2D(MultiRobotGraph):
                 self.inter_lc[(i, j)] = edge
         else:
             raise Exception("Line with unknown tag")
+
+    def add_perceptual_aliasing_lc(self, M=2, N=5):
+        """Add perceptual aliasing loop closures
+
+        Args:
+            M: number of groups of aliases
+            N: number of loop closures in each group
+        """
+        if M <= 0 or N <= 0:
+            return
+
+        # Random variable parameters
+        x_mu = random.uniform(-5, 5)
+        x_sigma = 0.15
+        y_mu = random.uniform(-5, 5)
+        y_sigma = 0.15
+        theta_mu = random.uniform(-math.pi, math.pi)
+        theta_sigma = 0.15
+
+        # Information matrix
+        info = [1/x_sigma**2, 0, 0, 1/y_sigma**2, 0, 1/theta_sigma**2]
+
+        new_lc = {}
+        for _ in range(M):
+            i = random.choice(list(self.nodes[0]))
+            j = random.choice(list(self.nodes[1]))
+
+            # Random initial lc edge
+            pose_ij = Pose2D.random(x_mu, x_sigma, y_mu, y_sigma, theta_mu,
+                                    theta_sigma)
+            edge = Edge2D.from_pose(i, j, pose_ij, info)
+            new_lc[(i, j)] = edge
+
+            prev_i = i
+            prev_j = j
+            prev_pose_ij = pose_ij
+            for _ in range(N-1):
+                i = random.choice(list(self.nodes[0]))
+                j = random.choice(list(self.nodes[1]))
+
+                pose_i_iprev = self.get_relative(i, prev_i, 0)
+                pose_jprev_j = self.get_relative(prev_j, j, 1)
+
+                # Construct next consistent lc edge
+                pose_ij = pose_i_iprev * prev_pose_ij * pose_jprev_j
+                edge = Edge2D.from_pose(i, j, pose_ij, info)
+                new_lc[(i, j)] = edge
+
+                prev_i = i
+                prev_j = j
+                prev_pose_ij = pose_ij
+
+        self.inter_lc.update(new_lc)
 
 
 class MultiRobotGraph3D(MultiRobotGraph):
