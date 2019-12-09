@@ -8,6 +8,9 @@ Pairwise Consistent Measurement Set Maximization for Robust Multi-robot Map Merg
 * numpy-quaternion
 * sophuspy
 * scipy
+* numba
+* tqdm
+* fmc in find_max_clique/fmc
 
 ## Setup
 Update your PYTHONPATH environment variable to include the root of the project
