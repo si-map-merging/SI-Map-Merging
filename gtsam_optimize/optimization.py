@@ -66,7 +66,7 @@ class Graph:
         key_vec = gtsam.gtsam.KeyVector()
         key_vec.push_back(i)
         key_vec.push_back(j)
-        return self.marginals.jointMarginalCovariance(key_vec).at(i, j)
+        return self.marginals.jointMarginalCovariance(key_vec).at(j, j)
 
     def joint_marginal(self, i, j):
         key_vec = gtsam.gtsam.KeyVector()
@@ -177,10 +177,10 @@ if __name__ == "__main__":
     sys.path.append("../")
     from process_g2o.utils import SingleRobotGraph3D, SingleRobotGraph2D
 
-    is_3D = True
+    is_3D = False
     if is_3D:
         srg = SingleRobotGraph3D()
-        srg.read_from("datasets/parking-garage.g2o")
+        srg.read_from("../datasets/parking-garage.g2o")
         gtsam_graph = Graph3D(srg)
     else:
         srg = SingleRobotGraph2D()
@@ -199,6 +199,8 @@ if __name__ == "__main__":
     j = 100
     print("===== Cross Covariance between Node {} and {} ======".format(i, j))
     print(gtsam_graph.cross_cov(i, j))
+
+    print(gtsam_graph.cross_cov(j, i))
 
     print("====== Joint Marginal of Node {} and {} =======".format(i, j))
     print(gtsam_graph.joint_marginal(i, j))
