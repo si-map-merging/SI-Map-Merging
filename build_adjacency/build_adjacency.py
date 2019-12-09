@@ -6,7 +6,8 @@ from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
 import sophus as sp
-from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, Edge3D, Quaternion
+from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, \
+    Edge3D, Quaternion, cholesky_inverse
 from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
@@ -14,7 +15,7 @@ class AdjacencyMatrix:
     """
     The major class for building the adjacency matrix
     """
-    def __init__(self, multi_rob_graph, gamma=3, optim=True):
+    def __init__(self, multi_rob_graph, gamma=3, optim=True, dim2=True):
         """
         Args:
             multi_rob_graph: multi-robot graph of type MultiRobotGraph
@@ -27,7 +28,7 @@ class AdjacencyMatrix:
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
-        if optim:
+        if optim and dim2:
             graph1, graph2 = self.graph.to_singles()
             self.gtsam_graph1 = Graph2D(graph1)
             self.gtsam_graph2 = Graph2D(graph2)
@@ -294,7 +295,7 @@ class AdjacencyMatrix:
             A numpy array
         """
         info_mat = self.get_info_mat(pose)
-        cov_mat = np.linalg.inv(info_mat)
+        cov_mat = cholesky_inverse(info_mat)
         assert self.check_symmetry(cov_mat)
         return cov_mat
 
@@ -320,7 +321,7 @@ class AdjacencyMatrix:
         Return:
             A vector
         """
-        info_mat = np.linalg.inv(cov)
+        info_mat = cholesky_inverse(cov)
         info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
                 info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
@@ -434,7 +435,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         # try:
         #     assert self.check_symmetry(np.linalg.inv(new_cov))
         # except AssertionError:
-        #     __import__("pdb").set_trace()
+        # __import__("pdb").set_trace()
 
         new_info = self.to_info(new_cov)
         return Edge3D(pose.j, pose.i, t_inv, q_inv, new_info)
@@ -505,7 +506,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
 
         K1 = np.matrix([
             [1, (np.cos(theta3)*np.sin(phi3-phi1))/np.sin(theta3), (np.sin(theta2)*np.cos(psi3-psi2))/np.sin(theta3)],
-            [0, np.cos(phi3-phi1), np.sin(theta1)*np.sin(psi3-psi2)],
+            [0, np.cos(phi3-phi1), np.sin(theta2)*np.sin(psi3-psi2)],
             [0, np.sin(phi3-phi1)/np.sin(theta3), (np.sin(theta1)*np.cos(phi3-phi1))/np.sin(theta3)]])
 
         K2 = np.matrix([
@@ -525,13 +526,13 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         cov2 = pose2.cov()
         cross_cov = self.get_cross_cov(pose1, pose2, robot_idx, odom)
         if odom:
-            J_minus_easy = self.compute_J_minus(pose1)
-            J_minus = np.linalg.inv(J_minus_easy)
+            # J_minus_easy = self.compute_J_minus(pose1)
+            # J_minus = np.linalg.inv(J_minus_easy)
             # print("J_minus_easy: \n")
             # print(J_minus_easy)
             # print("J_minus: \n") 
             # print(J_minus)
-            # J_minus_hard = self.compute_J_minus(self.inverse_op(pose1))
+            J_minus = self.compute_J_minus(self.inverse_op(pose1))
             # print("J_minus_hard: \n")
             # print(J_minus_hard)
             # print("Make sure change this later...")
@@ -543,6 +544,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         prev_cov[6:, 6:] = cov2
 
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
+        __import__("pdb").set_trace()
+
         new_info = self.to_info(new_cov)
         return Edge3D(pose1.i, pose2.j, new_t, new_q, new_info)
 
@@ -587,7 +590,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         sz = 21                  # size of `info`
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
-        info_mat = np.linalg.inv(cov)
+        info_mat = cholesky_inverse(cov)
         # sym_info_mat = np.maximum(info_mat, info_mat.transpose())
         try:
             assert self.check_symmetry(info_mat)
