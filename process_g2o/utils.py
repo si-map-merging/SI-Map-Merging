@@ -148,6 +148,10 @@ class Node2D:
     def pose(self):
         return self.x, self.y, self.theta
 
+    def __mul__(self, scale):
+        self.x *= scale
+        self.y *= scale
+
 
 class Node3D:
     """Node of a 3D graph, representing a pose
@@ -176,6 +180,9 @@ class Node3D:
         T[:3, :3] = R
         T[:3, 3] = self.t
         return T
+
+    def __mul__(self, scale):
+        self.t *= scale
 
 class Edge2D:
     """Edge of a 2D graph, representing a measurement between 2 nodes
@@ -220,6 +227,16 @@ class Edge2D:
 
     def has_diagonal_info(self):
         return self.info[1] == self.info[2] == self.info[4] == 0
+
+    def __mul__(self, scale):
+        self.x *= scale
+        self.y *= scale
+        self.info[0] *= scale * scale
+        self.info[1] *= scale * scale
+        self.info[2] *= scale
+        self.info[3] *= scale * scale
+        self.info[4] *= scale
+
 
     def __str__(self):
         return "{} {} {} {} {} {}".format(self.i, self.j, self.x, self.y, self.theta,
@@ -591,6 +608,24 @@ class MultiRobotGraph:
             graph.loop_closure_edges.update(self.lc[i])
         graph.loop_closure_edges.update(self.inter_lc)
         return graph
+
+    def vary_scale(self, s_b=None, s_l=None):
+        """Vary the scale of the second robot graph by a common factor,
+            and vary each loop closure by a factor
+        """
+        # Vary the scale for robot b
+        if s_b is None:
+            s_b = random.uniform(1, 10)
+        for node in self.nodes[1].values():
+            node *= s_b
+        for edge in self.odoms[1].values():
+            edge *= s_b
+        for edge in self.lc[1].values():
+            edge *= s_b
+        for edge in self.inter_lc.values():
+            if s_l is None:
+                s_l = random.uniform(1, 10)
+            edge *= s_l
 
 
 class MultiRobotGraph2D(MultiRobotGraph):
