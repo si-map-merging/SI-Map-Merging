@@ -370,13 +370,13 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             x_lk = self.compute_current_estimate(ll, kk, 'b')
         else:
             if kk != ll and ii != jj:
-                x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
-                x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+                x_ij = self.get_current_estimate_from_gtsam(ii, jj, 'a')
+                x_lk = self.get_current_estimate_from_gtsam(ll, kk, 'b')
             else:               # two loop closures coincide
                 if kk == ll:
-                    x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
+                    x_ij = self.get_current_estimate_from_gtsam(ii, jj, 'a')
                 elif ii == jj:
-                    x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+                    x_lk = self.get_current_estimate_from_gtsam(ll, kk, 'b')
 
         # for debug
         try:
@@ -431,6 +431,20 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             cov = self.gtsam_graph2.cov(idx)
             info = self.to_info(cov)
         return Edge3D('w', idx, translation, Quaternion.from_R(R).q, info)
+
+    def get_current_estimate_from_gtsam(self, start, end, robot_idx):
+        """Using gtsam's between function to directly get current estimation
+        Return:
+            An Edge3D object describing the transformation from start to end
+        """
+        if robot_idx == 'a':
+            gtsam_graph = self.gtsam_graph1
+        elif robot_idx == 'b':
+            gtsam_graph = self.gtsam_graph2
+
+        transform, covariance = gtsam_graph.between(start, end)
+        info = self.to_info(covariance)
+        return Edge3D(start, end, transform[0], Quaternion.from_R(transform[1]).q, info)
 
     def inverse_op(self, pose):
         """Compute x_ji given x_ij in the 3D case.
