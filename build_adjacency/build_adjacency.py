@@ -98,8 +98,8 @@ class AdjacencyMatrix:
             x_ij = self.compute_current_estimate(ii, jj, 'a')
             x_lk = self.compute_current_estimate(ll, kk, 'b')
         else:
-            x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
-            x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+            x_ij = self.get_current_estimate_from_gtsam(ii, jj, 'a')
+            x_lk = self.get_current_estimate_from_gtsam(ll, kk, 'b')
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
@@ -154,6 +154,20 @@ class AdjacencyMatrix:
         trans_pose = self.inverse_compound(start_pose, end_pose, robot_idx)
 
         return trans_pose
+
+    def get_current_estimate_from_gtsam(self, start, end, robot_idx):
+        """Using gtsam's between function to directly get current estimation
+        Return:
+            An Edge2D object describing the transformation from start to end
+        """
+        if robot_idx == 'a':
+            gtsam_graph = self.gtsam_graph1
+        elif robot_idx == 'b':
+            gtsam_graph = self.gtsam_graph2
+
+        transform, covariance = gtsam_graph.between(start, end)
+        info = self.to_info(covariance)
+        return Edge2D(start, end, transform[0], transform[1], transform[2], info)
 
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """Convert a post-optimization Node with covariance to a 'virtual Edge'. The
@@ -635,7 +649,7 @@ if __name__ == "__main__":
                         default="process_g2o/output.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
-    parser.add_argument("dim", metavar="int", type=int, nargs='?', default=3,
+    parser.add_argument("dim", metavar="int", type=int, nargs='?', default=2,
                         help="Using 2D or 3D pose graph")
     args = parser.parse_args()
     if args.dim == 3:
@@ -652,6 +666,6 @@ if __name__ == "__main__":
     elif args.dim == 2:
         ADJ = AdjacencyMatrix(graph, gamma=0.1, optim=True)
     # adj.single_graphs_optimization()
-    ADJ.test_inverse_op()
+    # ADJ.test_inverse_op()
     coo_adj_mat = ADJ.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, field='integer', symmetry='symmetric')

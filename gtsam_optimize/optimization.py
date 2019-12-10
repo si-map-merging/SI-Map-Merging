@@ -80,27 +80,27 @@ class Graph:
         Return:
             pose as np.array([x, y, theta])
         """
-        pose = self.result.atPose2(idx)
-        return np.array([pose.x(), pose.y(), pose.theta()])
+        pose2 = self.result.atPose2(idx)
+        return np.array([pose2.x(), pose2.y(), pose2.theta()])
 
-    def between(self, i, j):
+    def between(self, idxi, idxj):
         """Compute the compounded 2D pose between pose i and pose j, and the resulting
         covariance between pose i and pose j
         Return:
         result: a 3x1 numpy array
                 the covariance between pose i and pose j
         """
-        posei = self.result.atPose2(i)
-        posej = self.result.atPose2(j)
+        posei = self.result.atPose2(idxi)
+        posej = self.result.atPose2(idxj)
         result = posei.inverse().compose(posej)
         result_pose = np.array([result.x(), result.y(), result.theta()])
         H1 = -result.inverse().AdjointMap()
         size = H1.shape[0]
         H2 = np.eye(size)
         A = np.hstack([H1, H2])
-        covi = self.cov(i)
-        covj = self.cov(j)
-        cross_cov = self.cross_cov(i, j)
+        covi = self.cov(idxi)
+        covj = self.cov(idxj)
+        cross_cov = self.cross_cov(idxi, idxj)
         covij = np.zeros((6, 6))
         covij[:3, :3] = covi
         covij[:3, 3:] = cross_cov
@@ -198,23 +198,23 @@ class Graph3D(Graph):
         pose = self.result.atPose3(idx)
         return [pose.translation().vector(), pose.rotation().matrix()]
 
-    def between(self, i, j):
+    def between(self, idxi, idxj):
         """Compute the compounded 2D pose between pose i and pose j, and the resulting
         covariance between pose i and pose j
         Return:
         result: a 3
         """
-        posei = self.result.atPose3(i)
-        posej = self.result.atPose3(j)
+        posei = self.result.atPose3(idxi)
+        posej = self.result.atPose3(idxj)
         result = posei.inverse().compose(posej)
         result_pose = [result.translation().vector(), result.rotation().matrix()]
         H1 = -result.inverse().AdjointMap()
         size = H1.shape[0]
         H2 = np.eye(size)
         A = np.hstack([H1, H2])
-        covi = self.cov(i)
-        covj = self.cov(j)
-        cross_cov = self.cross_cov(i, j)
+        covi = self.cov(idxi)
+        covj = self.cov(idxj)
+        cross_cov = self.cross_cov(idxi, idxj)
         covij = np.zeros((12, 12))
         covij[:6, :6] = covi
         covij[:6, 6:] = cross_cov
@@ -232,26 +232,26 @@ if __name__ == "__main__":
     if is_3D:
         srg = SingleRobotGraph3D()
         srg.read_from("../datasets/parking-garage.g2o")
-        gtsam_graph = Graph3D(srg)
+        graph = Graph3D(srg)
     else:
         srg = SingleRobotGraph2D()
         srg.read_from("../datasets/manhattanOlson3500.g2o")
-        gtsam_graph = Graph2D(srg)
+        graph = Graph2D(srg)
 
 
-    gtsam_graph.optimize()
+    graph.optimize()
     print("======= Manhattan Graph Optimization =========")
-    gtsam_graph.print_stats()
-    pose = gtsam_graph.get_pose(39)
+    graph.print_stats()
+    pose = graph.get_pose(39)
     i = 0
     print("======= Covariance of Node {} ===========".format(i))
-    print(gtsam_graph.cov(i))
+    print(graph.cov(i))
 
     j = 100
     print("===== Cross Covariance between Node {} and {} ======".format(i, j))
-    print(gtsam_graph.cross_cov(i, j))
+    print(graph.cross_cov(i, j))
 
-    print(gtsam_graph.cross_cov(j, i))
+    print(graph.cross_cov(j, i))
 
     print("====== Joint Marginal of Node {} and {} =======".format(i, j))
-    print(gtsam_graph.joint_marginal(i, j))
+    print(graph.joint_marginal(i, j))
