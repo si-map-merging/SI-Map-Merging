@@ -15,6 +15,12 @@ T12 = gtsam.Pose2(1, 0, 0.1)
 # H1=np.zeros((3,3))
 # H2=np.zeros((3,3))
 
+def cov_delta_xij(xi,xj,cov):
+    _,H1,H2 = between(xi,xj)
+    A = np.hstack([H1,H2])
+    return A @ cov @ A.T
+
+
 def between(p1,p2):
     result = p1.inverse().compose(p2)
     H1 = -result.inverse().AdjointMap()
@@ -31,7 +37,8 @@ def between(p1,p2):
 
 # -result.inverse().AdjointMap();
 
-print(between(T11,T12))
+_,H1,H2 = between(T11,T12)
+print(np.hstack([H1,H2]))
 
 print(T11.between(T12))
 # print(H1)
