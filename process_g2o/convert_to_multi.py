@@ -30,14 +30,14 @@ if __name__ == "__main__":
     print("========== Input g2o Graph Summary ================")
     graph.print_summary()
 
-    multi_graph = graph.to_multi(n_max_inter_lc=10)
+    multi_graph = graph.to_multi(n_max_inter_lc=20)
     print("========== Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
 
     if not args.is_3D:
         multi_graph.add_perceptual_aliasing_lc(2, 8)
       # multi_graph.vary_scale()
-    multi_graph.add_random_inter_lc(N=10)
+    multi_graph.add_random_inter_lc(N=20)
     print("========== Noisy Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
     multi_graph.write_to(args.output_fpath)

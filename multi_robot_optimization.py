@@ -40,7 +40,7 @@ if __name__ == "__main__":
     if args.is_3D:
         adj = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
     else:
-        adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
+        adj = AdjacencyMatrix(multi_graph, gamma=1, optim=True)
     # Compute Adjacency matrix
     coo_adj_mat = adj.build_adjacency_matrix()
     mtx_fpath = "adj.mtx"
