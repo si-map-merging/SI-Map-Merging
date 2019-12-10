@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # Compute consistency matrix
     if args.is_3D:
-        adj = AdjacencyMatrix3D(multi_graph, gamma=0.0001, optim=True)
+        adj = AdjacencyMatrix3D(multi_graph, gamma=0.1, optim=True)
     else:
         adj = AdjacencyMatrix(multi_graph, gamma=0.1, optim=True)
     # Compute Adjacency matrix

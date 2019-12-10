@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 import sophus as sp
 from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, \
-    Edge3D, Quaternion, cholesky_inverse
+    Edge3D, Quaternion#, cholesky_inverse
 from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
@@ -62,11 +62,11 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
+                # print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    print("this mahlji for {} is: {}".format((j+1, i+1), mahlji))
+                    # print("this mahlji for {} is: {}".format((j+1, i+1), mahlji))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1
@@ -289,6 +289,18 @@ class AdjacencyMatrix:
         new_info = self.to_info(new_cov)
         return Edge2D(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
+    @classmethod
+    def is_pos_def(cls, matrix):
+        """Check if a matrix is positive definite
+        Computing cholesky decomposition is much more efficient than computing eigenvalues.
+        Output: True or False
+        """
+        try:
+            np.linalg.cholesky(matrix)
+        except np.linalg.LinAlgError:
+            return False
+        return True
+
     def get_info_mat(self, pose):
         """Extract information matrix from pose
         """
@@ -309,7 +321,14 @@ class AdjacencyMatrix:
             A numpy array
         """
         info_mat = self.get_info_mat(pose)
-        cov_mat = cholesky_inverse(info_mat)
+        assert self.is_pos_def(info_mat), "info_mat is not positive definite!"
+        # cov_mat = cholesky_inverse(info_mat)
+        cov_mat = np.linalg.inv(info_mat)
+        # try:
+        #     cov_mat = cholesky_inverse(info_mat)
+        # except np.linalg.LinAlgError:
+        #     __import__("pdb").set_trace()
+
         assert self.check_symmetry(cov_mat)
         return cov_mat
 
@@ -335,7 +354,7 @@ class AdjacencyMatrix:
         Return:
             A vector
         """
-        info_mat = cholesky_inverse(cov)
+        info_mat = np.linalg.inv(cov)
         info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
                 info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
@@ -618,7 +637,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         sz = 21                  # size of `info`
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
-        info_mat = cholesky_inverse(cov)
+        assert self.is_pos_def(cov)
+        info_mat = np.linalg.inv(cov)
         # sym_info_mat = np.maximum(info_mat, info_mat.transpose())
         try:
             assert self.check_symmetry(info_mat)

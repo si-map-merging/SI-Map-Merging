@@ -98,14 +98,7 @@ class Graph:
         size = H1.shape[0]
         H2 = np.eye(size)
         A = np.hstack([H1, H2])
-        covi = self.cov(idxi)
-        covj = self.cov(idxj)
-        cross_cov = self.cross_cov(idxi, idxj)
-        covij = np.zeros((6, 6))
-        covij[:3, :3] = covi
-        covij[:3, 3:] = cross_cov
-        covij[3:, :3] = cross_cov.T
-        covij[3:, 3:] = covj
+        covij = self.joint_marginal(idxi, idxj)
 
         return result_pose, A @ covij @ A.T
 
