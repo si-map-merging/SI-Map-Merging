@@ -83,6 +83,32 @@ class Graph:
         pose = self.result.atPose2(idx)
         return np.array([pose.x(), pose.y(), pose.theta()])
 
+    def between(self, i, j):
+        """Compute the compounded 2D pose between pose i and pose j, and the resulting
+        covariance between pose i and pose j
+        Return:
+        result: a 3x1 numpy array
+                the covariance between pose i and pose j
+        """
+        posei = self.result.atPose2(i)
+        posej = self.result.atPose2(j)
+        result = posei.inverse().compose(posej)
+        result_pose = np.array([result.x(), result.y(), result.theta()])
+        H1 = -result.inverse().AdjointMap()
+        size = H1.shape[0]
+        H2 = np.eye(size)
+        A = np.hstack([H1, H2])
+        covi = self.cov(i)
+        covj = self.cov(j)
+        cross_cov = self.cross_cov(i, j)
+        covij = np.zeros((6, 6))
+        covij[:3, :3] = covi
+        covij[:3, 3:] = cross_cov
+        covij[3:, :3] = cross_cov.T
+        covij[3:, 3:] = covj
+
+        return result_pose, A @ covij @ A.T
+
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
         """
@@ -171,6 +197,31 @@ class Graph3D(Graph):
         """
         pose = self.result.atPose3(idx)
         return [pose.translation().vector(), pose.rotation().matrix()]
+
+    def between(self, i, j):
+        """Compute the compounded 2D pose between pose i and pose j, and the resulting
+        covariance between pose i and pose j
+        Return:
+        result: a 3
+        """
+        posei = self.result.atPose3(i)
+        posej = self.result.atPose3(j)
+        result = posei.inverse().compose(posej)
+        result_pose = [result.translation().vector(), result.rotation().matrix()]
+        H1 = -result.inverse().AdjointMap()
+        size = H1.shape[0]
+        H2 = np.eye(size)
+        A = np.hstack([H1, H2])
+        covi = self.cov(i)
+        covj = self.cov(j)
+        cross_cov = self.cross_cov(i, j)
+        covij = np.zeros((12, 12))
+        covij[:6, :6] = covi
+        covij[:6, 6:] = cross_cov
+        covij[6:, :6] = cross_cov.T
+        covij[6:, 6:] = covj
+
+        return result_pose, A @ covij @ A.T
 
 if __name__ == "__main__":
     import sys
