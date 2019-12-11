@@ -79,12 +79,12 @@ if __name__ == "__main__":
     TNR = 1 - FPR
     print("TNR: {}".format(TNR))
 
-    # # Perform overall graph optimization
-    # merged_graph = multi_graph.merge_to_single()
-    # gtsam_graph = optimization.Graph(merged_graph)
-    # gtsam_graph.optimize()
-    # print("===== Multi-Robot Optimization =====")
-    # gtsam_graph.print_stats()
+    # Perform overall graph optimization
+    merged_graph = multi_graph.merge_to_single()
+    gtsam_graph = optimization.Graph2D(merged_graph)
+    gtsam_graph.optimize()
+    print("===== Multi-Robot Optimization =====")
+    gtsam_graph.print_stats()
 
-    # # Write result as g2o
-    # gtsam_graph.write_to(args.output_fpath)
+    # Write result as g2o
+    gtsam_graph.write_to(args.output_fpath)
