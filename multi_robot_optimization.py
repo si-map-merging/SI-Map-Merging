@@ -73,9 +73,15 @@ if __name__ == "__main__":
             true_pos += 1
     false_pos = len(trusted_lc) - true_pos
 
-    TPR = true_pos / positives
+    if positives == 0:
+        TPR = 1
+    else:
+        TPR = true_pos / positives
     print("TPR: {}".format(TPR),'record')
-    FPR = false_pos / negatives
+    if negatives == 0:
+        FPR = 1
+    else:
+        FPR = false_pos / negatives
     TNR = 1 - FPR
     print("TNR: {}".format(TNR),'record')
 
