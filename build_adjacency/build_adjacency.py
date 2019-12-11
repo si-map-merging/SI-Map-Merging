@@ -316,7 +316,7 @@ class AdjacencyMatrix:
     def get_info_mat(self, pose):
         """Extract information matrix from pose
         """
-        info = np.zeros((3, 3))
+        info = np.zeros((3, 3), dtype=np.float)
         info[0, 0:3] = pose.info[0:3]
         info[1, 1:3] = pose.info[3:5]
         info[2, 2] = pose.info[5]
@@ -332,6 +332,9 @@ class AdjacencyMatrix:
         Return:
             A numpy array
         """
+        print(type(pose))
+        print(type(pose.info[:3]))
+        print(pose.info[:3])
         info_mat = self.get_info_mat(pose)
         assert self.is_pos_def(info_mat), "info_mat is not positive definite!"
         # cov_mat = cholesky_inverse(info_mat)
@@ -431,7 +434,7 @@ class AdjacencyMatrix:
         s_b = self.scale_estimator.estimate_sb()
         lc_norms = self.scale_estimator.estimate_lc()
 
-        print("sb: {}".norm(s_b))
+        print("sb: {}".format(s_b))
 
         # Correct for robot b scale
         self.graph.scale_robot_b( 1.0/s_b )
