@@ -47,13 +47,18 @@ def adaptive_voting(s,a,c):
     # Enumerate consensus sets and return best
     f_list=[]
     for i in range(2*K-1):
-        ww=0.
-        ss = 0.
-        for k in S[i]:
-            ww+=1./(a[k]**2)
-            ss+=s[k]/(a[k]**2)
-        s_est = ss/ww
-        f_list.append((s_est,f(s,a,s_est,c)))
+        if S[i]:
+            ww=0.
+            ss = 0.
+            # print S[i]
+            for k in S[i]:
+                ww+=1./(a[k]**2)
+                ss+=s[k]/(a[k]**2)
+            s_est = ss/ww
+            f_list.append((s_est,f(s,a,s_est,c)))
+        else:
+            s_est = m[i]
+            f_list.append((s_est,f(s,a,s_est,c)))
 
     #print f_list
     f_list  = sorted(f_list, key=lambda s:s[1])
@@ -61,6 +66,6 @@ def adaptive_voting(s,a,c):
 
 
 if __name__ == '__main__':
-    s = [1,2,2.8,3,3.2,4,5]
-    a = [1.1,1.1,1.3,1.3,1.1,1.1,1.1]
+    s = [1,2,2.8,3,3.2,4,5,10]
+    a = [1.1,1.1,1.3,1.3,1.1,1.1,1.1,1]
     print(adaptive_voting(s,a,1))
