@@ -31,17 +31,22 @@ class AdjacencyMatrix:
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
-        self.scale_estimator = ScaleEstimation(len(self.inter_lc_edges))
+        self.scale_estimator = ScaleEstimation(self.inter_lc_n)
+        self.gtsam_graph1 = None
+        self.gtsam_graph2 = None
         if optim and dim2:
-            graph1, graph2 = self.graph.to_singles()
-            self.gtsam_graph1 = Graph2D(graph1)
-            self.gtsam_graph2 = Graph2D(graph2)
-            # Single graphs optimization
-            print("=========== 2D Single Graphs Optimization ==============")
-            self.gtsam_graph1.optimize()
-            self.gtsam_graph2.optimize()
-            self.gtsam_graph1.print_stats()
-            self.gtsam_graph2.print_stats()
+            self.build_gtsam_graphs()
+
+    def build_gtsam_graphs(self):
+        graph1, graph2 = self.graph.to_singles()
+        self.gtsam_graph1 = Graph2D(graph1)
+        self.gtsam_graph2 = Graph2D(graph2)
+        # Single graphs optimization
+        print("=========== 2D Single Graphs Optimization ==============")
+        self.gtsam_graph1.optimize()
+        self.gtsam_graph2.optimize()
+        self.gtsam_graph1.print_stats()
+        self.gtsam_graph2.print_stats()
 
     def get_trusted_lc(self, indices):
         """Get trusted loop closure edges
@@ -59,6 +64,10 @@ class AdjacencyMatrix:
 
         Return: A symmetric matrix whose entries are either 0 or 1
         """
+        self.feed_lc()
+        self.correct_for_scale()
+        self.build_gtsam_graphs()
+
         adjacency_matrix = np.zeros((self.inter_lc_n, self.inter_lc_n))
         for i in tqdm(range(self.inter_lc_n)):
             adjacency_matrix[i, i] = 1
@@ -366,7 +375,7 @@ class AdjacencyMatrix:
         """Feed all combinations of 3 inter-robot loop closures into
             scale estimation module
         """
-        for indices in itertools.combinations(range(len(self.inter_lc_edges), 3)):
+        for indices in itertools.combinations(range(len(self.inter_lc_edges)), 3):
             i, j, k = indices
             edge1 = self.inter_lc_edges[i]
             edge2 = self.inter_lc_edges[j]
@@ -381,18 +390,27 @@ class AdjacencyMatrix:
                 Q_z_values.append( gtsam.noiseModel_Gaussian.Covariance(edge.cov()))
 
             # Compute relative poses
-            x_a_ij, Q_a_ij = self.gtsam_graph1.between( edge1.i, edge2.i )
-            x_a_jk, Q_a_jk = self.gtsam_graph1.between( edge2.i, edge3.i )
-            x_a_ik, Q_a_ik = self.gtsam_graph1.between( edge1.i, edge3.i )
+            x_a_ij, Q_a_ij = self.gtsam_graph1.pos_and_cov( edge1.i, edge2.i )
+            x_a_jk, Q_a_jk = self.gtsam_graph1.pos_and_cov( edge2.i, edge3.i )
+            x_a_ik, Q_a_ik = self.gtsam_graph1.pos_and_cov( edge1.i, edge3.i )
 
-            x_b_ij, Q_b_ij = self.gtsam_graph1.between( edge1.j, edge2.j )
-            x_b_jk, Q_b_jk = self.gtsam_graph1.between( edge2.j, edge3.j )
-            x_b_ik, Q_b_ik = self.gtsam_graph1.between( edge1.j, edge3.j )
+            x_b_ij, Q_b_ij = self.gtsam_graph2.pos_and_cov( edge1.j, edge2.j )
+            x_b_jk, Q_b_jk = self.gtsam_graph2.pos_and_cov( edge2.j, edge3.j )
+            x_b_ik, Q_b_ik = self.gtsam_graph2.pos_and_cov( edge1.j, edge3.j )
 
             # Assemble values
             poses = [[x_a_ij, x_a_jk, x_a_ik], [x_b_ij, x_b_jk, x_b_ik], z_values]
             covs = [[Q_a_ij, Q_a_jk, Q_a_ik], [Q_b_ij, Q_b_jk, Q_b_ik], Q_z_values]
             self.scale_estimator.scale_estimate(poses, covs, indices)
+
+    def correct_for_scale(self):
+        """Get the estimated scales, and correct the graph for these scales
+        """
+        s_b, lc_scales = self.scale_estimator.get_scales()
+        self.graph.scale_robot_b(s_b)
+        for i in range(len(self.inter_lc_n)):
+            s_l = self.lc_scales[i]
+            self.inter_lc_edges[i] *= s_l
 
 
 class AdjacencyMatrix3D(AdjacencyMatrix):
