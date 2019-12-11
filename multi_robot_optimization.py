@@ -74,10 +74,10 @@ if __name__ == "__main__":
     false_pos = len(trusted_lc) - true_pos
 
     TPR = true_pos / positives
-    print("TPR: {}".format(TPR))
+    print("TPR: {}".format(TPR),'record')
     FPR = false_pos / negatives
     TNR = 1 - FPR
-    print("TNR: {}".format(TNR))
+    print("TNR: {}".format(TNR),'record')
 
     # Perform overall graph optimization
     merged_graph = multi_graph.merge_to_single()

@@ -44,7 +44,7 @@ class ScaleEstimation(object):
 
         graph = gtsam.NonlinearFactorGraph()
 
-        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.1, 0.1, 0.1],dtype = np.float))
+        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.01, 0.01, 0.01],dtype = np.float))
         graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 0.0), PRIOR_NOISE))
 
         graph.add(gtsam.BetweenFactorPose2(1, 2, xa_list[0], qa_list[0]))
@@ -121,6 +121,7 @@ class ScaleEstimation(object):
 
     def estimate_sb(self, c=1):
         sb = adaptive_voting(self.sb_list,self.sb_std_list,c)
+        print('estemated_sb',sb,'record')
         return sb
         pass
 
