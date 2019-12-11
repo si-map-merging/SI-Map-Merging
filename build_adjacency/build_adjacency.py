@@ -389,6 +389,7 @@ class AdjacencyMatrix:
                 if len(indices) < 6:
                     return True
                 return False
+
             if contain_same_nodes(edge1, edge2, edge3):
                 continue
 
@@ -414,6 +415,7 @@ class AdjacencyMatrix:
             covs = [[Q_a_ij, Q_a_jk, Q_a_ik], [Q_b_ij, Q_b_jk, Q_b_ik], Q_z_values]
             scales, stds = self.scale_estimator.scale_estimate(poses, covs, indices)
             if (not edge1.is_outlier and not edge2.is_outlier and not edge3.is_outlier):
+                print("True")
                 print("i: {}, j: {}, k: {}".format(i, j, k))
                 print(scales)
                 print(stds)
