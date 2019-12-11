@@ -410,7 +410,7 @@ class AdjacencyMatrix:
         s_b, lc_scales = self.scale_estimator.get_scales()
         self.graph.scale_robot_b(s_b)
         for i in range(len(self.inter_lc_n)):
-            s_l = self.lc_scales[i]
+            s_l = lc_scales[i]
             self.inter_lc_edges[i] *= s_l
 
 
