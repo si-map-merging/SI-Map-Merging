@@ -21,9 +21,7 @@ def between(p1, p2):
     return result,H1,H2
 
 def get_scale(x,x_original,cov):
-
     
-
     return s,var
     pass
 

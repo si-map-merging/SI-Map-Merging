@@ -4,7 +4,7 @@ from SIFactor import *
 class ScaleEstimation(object):
     """docstring for ScaleEstimation"""
     def __init__(self, lc_num):
-        super(ScaleEstimation, self).__init__(lc_num)
+        
         self.lc_num = lc_num
         self.history = []
 
