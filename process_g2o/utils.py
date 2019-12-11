@@ -226,6 +226,9 @@ class Edge2D:
         line += " ".join([str(x) for x in self.info])
         return line
 
+    def norm(self):
+        return np.sqrt(self.x * self.x + self.y * self.y)
+
     def measurement(self):
         return self.x, self.y, self.theta
 
