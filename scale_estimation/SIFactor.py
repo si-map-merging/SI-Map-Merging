@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import gtsam.utils.plot as gtsam_plot
 
 
-def cov_delta_xij(xi,xj,joint_marginal_matrix):
+def cov_delta_xij(xi, xj, joint_marginal_matrix):
     _,H1,H2 = between(xi,xj)
     A = np.hstack([H1,H2])
     return A @ joint_marginal_matrix @ A.T
 
 
-def between(p1,p2):
+def between(p1, p2):
     result = p1.inverse().compose(p2)
     H1 = -result.inverse().AdjointMap()
     size = H1.shape[0]
@@ -27,7 +27,7 @@ def inv_Q(Q):
     return Q_inv
 
 
-def construct_SIFactor2(xi,xj,cov):
+def construct_SIFactor2(xi, xj, cov):
     measured = xi.between(xj)
     # print(type(joint_marginal_matrix))
 
@@ -94,7 +94,7 @@ def construct_SIFactor2(xi,xj,cov):
 
     # print(np.linalg.matrix_rank(H))
 
-def scale_pose(p,s):
+def scale_pose(p, s):
     #print(p)
     T_trans = type(p.translation())
     T_pose = type(p)
@@ -108,7 +108,7 @@ def scale_pose(p,s):
     #print(new_p)
     return new_p
 
-def scale_covariance(cov,s):
+def scale_covariance(cov, s):
     #print(type(cov))
     if not (type(cov) is type(np.array([1.,2.]))):
         cov = cov.covariance()
