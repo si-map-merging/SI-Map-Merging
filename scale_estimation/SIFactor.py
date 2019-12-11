@@ -137,6 +137,38 @@ def get_scale(x,x_original,cov):
     std_s = s/l *std_l
 
     return s,std_s
+
+def get_length(x,x_original,cov):
+    size = cov.shape[0]
+    dim = x.translation().vector().shape[0]
+
+    cov_translation = inv_Q(marginalization(inv_Q(cov), range(dim)))
+    # cov_trans = 
+
+    R_ij = x.rotation().matrix()
+
+    ex = np.zeros(dim)
+    ex[0] = 1
+    R_ki = rotation_matrix_between_vectors(x.translation().vector(), ex)
+
+    R_kj = R_ki @ R_ij
+
+    # R = np.block([
+    #     [R_kj, np.zeros((dim,size-dim))],
+    #     [np.zeros(size-dim,dim), np.eye(size-dim)]
+    #     ])
+
+    new_cov = R_kj @ cov_translation
+
+    var = inv_Q(marginalization(inv_Q(new_cov),[0]))
+    var = var.reshape(-1)[0]
+    #print(var)
+
+    l = np.linalg.norm(x.translation().vector())
+    l0 = np.linalg.norm(x_original.translation().vector())
+
+    std_l = np.sqrt(var)
+    return l,std_l
     pass
 
 

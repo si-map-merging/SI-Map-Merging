@@ -1,5 +1,6 @@
 import numpy as np
 from .SIFactor import *
+from .adaptive_voting import *
 
 class ScaleEstimation(object):
     """docstring for ScaleEstimation"""
@@ -7,6 +8,21 @@ class ScaleEstimation(object):
 
         self.lc_num = lc_num
         self.history = []
+        self.sb_list = []
+        self.sb_std_list = []
+        self.sb_index_list = []
+
+        self.lc_list = []
+        self.lc_std_list = []
+        self.lc_index_list = []
+        self.lc_result = []
+
+        for i in range(lc_num):
+            self.lc_list.append([])
+            self.lc_std_list.append([])
+            self.lc_index_list.append([])
+            self.lc_result.append([])
+
 
     def get_reletive_pose(self, i , j):
 
@@ -21,6 +37,7 @@ class ScaleEstimation(object):
 
 
     def scale_estimate(self, poses, covs, index_list):
+        index = len(self.history)
 
         xa_list, xb_list, z_list = poses
         qa_list, qb_list, qab_list = covs
@@ -81,13 +98,35 @@ class ScaleEstimation(object):
 
 
         sb,sb_std = get_scale3(new_xb_list, xb_list, qb_list)
-        s1,s1_std = get_scale(z14, z_list[0], noise14)
-        s2,s2_std = get_scale(z25, z_list[1], noise25)
-        s3,s3_std = get_scale(z36, z_list[2], noise36)
+        l1,l1_std = get_scale(z14, z_list[0], noise14)
+        l2,l2_std = get_scale(z25, z_list[1], noise25)
+        l3,l3_std = get_scale(z36, z_list[2], noise36)
 
-        s_list = [sb,s1,s2,s3]
-        std_list = [sb_std, s1_std, s2_std, s3_std]
-        return s_list,std_list
+
+        l_list = [l1,l2,l3]
+        l_std_list = [l1_std, l2_std, l3_std]
+        self.history.append((sb,sb_std,l_list,l_std_list))
+        self.sb_list.append(sb)
+        self.sb_std_list.append(sb_std)
+        self.sb_index_list.append(index)
+
+        for i,lc_index in enumerate(index_list):
+            self.lc_list[lc_index].append(l_list[i])
+            self.lc_std_list[lc_index].append(l_std_list[i])
+            self.lc_index_list[lc_index].append(index)
+
+        return sb,sb_std,l_list,l_std_list
+
+
+    def estimate_sb(self, c=1):
+        sb = adaptive_voting(self.sb_list,self.sb_std_list,c)
+        return sb
+        pass
+
+    def estimate_lc(self,c=1):
+        for i in range(self.lc_num):
+            self.lc_result.append(adaptive_voting(self.lc_list[i],self.lc_std_list[i],c))
+        return self.lc_result
 
         # self.history
 
