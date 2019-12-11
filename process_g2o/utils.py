@@ -152,8 +152,9 @@ class Node2D:
         return self.x, self.y, self.theta
 
     def __mul__(self, scale):
-        self.x *= scale
-        self.y *= scale
+        x = self.x * scale
+        y = self.y * scale
+        return Node2D(self.id_, x, y, self.theta)
 
 
 class Node3D:
@@ -185,7 +186,8 @@ class Node3D:
         return T
 
     def __mul__(self, scale):
-        self.t *= scale
+        t = self.t * scale
+        return Node3D(self.id_, t, self.q)
 
 class Edge2D:
     """Edge of a 2D graph, representing a measurement between 2 nodes
@@ -232,13 +234,15 @@ class Edge2D:
         return self.info[1] == self.info[2] == self.info[4] == 0
 
     def __mul__(self, scale):
-        self.x *= scale
-        self.y *= scale
-        self.info[0] /= scale * scale
-        self.info[1] /= scale * scale
-        self.info[2] /= scale
-        self.info[3] /= scale * scale
-        self.info[4] /= scale
+        x = self.x * scale
+        y = self.y * scale
+        info = self.info.copy()
+        info[0] /= scale * scale
+        info[1] /= scale * scale
+        info[2] /= scale
+        info[3] /= scale * scale
+        info[4] /= scale
+        return Edge2D(self.i, self.j, x, y, self.theta, info)
 
     def info_mat(self):
         """
@@ -636,27 +640,27 @@ class MultiRobotGraph:
         """
         # Vary the scale for robot b
         if s_b is None:
-            s_b = random.uniform(1, 10)
-        for node in self.nodes[1].values():
-            node *= 1.0/s_b
-        for edge in self.odoms[1].values():
-            edge *= 1.0/s_b
-        for edge in self.lc[1].values():
-            edge *= 1.0/s_b
-        for edge in self.inter_lc.values():
+            s_b = random.uniform(0.1, 2)
+        for key, val in self.nodes[1].items():
+            self.nodes[1][key] =  val * s_b
+        for key, val in self.odoms[1].items():
+            self.odoms[1][key] = val * s_b
+        for key, val in self.lc[1].items():
+            self.lc[1][key] = val * s_b
+        for key, val in self.inter_lc.items():
             if s_l is None:
-                s_l = random.uniform(1, 10)
-            edge *= 1.0/s_l
+                s_l = random.uniform(0.1, 2)
+            self.inter_lc[key] = val * s_l
 
     def scale_robot_b(self, s_b):
         """Scale the translations of robot b by s_b
         """
-        for node in self.nodes[1].values():
-            node *= s_b
-        for edge in self.odoms[1].values():
-            edge *= s_b
-        for edge in self.lc[1].values():
-            edge *= s_b
+        for key, node in self.nodes[1].items():
+            self.nodes[1][key] = node * s_b
+        for key, edge in self.odoms[1].items():
+            self.odoms[1][key] = edge * s_b
+        for key, edge in self.lc[1].items():
+            self.lc[1][key] = edge * s_b
 
 
 class MultiRobotGraph2D(MultiRobotGraph):

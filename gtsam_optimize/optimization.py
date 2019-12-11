@@ -90,10 +90,10 @@ class Graph:
         result: a 3x1 numpy array
                 the covariance between pose i and pose j
         """
-        result, cov = self.pos_and_cov(idxi, idxj)
+        result, gtsam_cov = self.pos_and_cov(idxi, idxj)
 
         result_pose = np.array([result.x(), result.y(), result.theta()])
-        return result_pose, cov
+        return result_pose, gtsam_cov.covariance()
 
     def pos_and_cov(self, idxi, idxj):
         """Return relative Pose2D between pose i and pose j, and the covariance
