@@ -32,9 +32,13 @@ ODOMETRY_NOISE = gtsam.noiseModel_Gaussian.Covariance(sb)
 # print(ODOMETRY_NOISE.R())
 # print(ODOMETRY_NOISE.information())
 PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([1.6, 0.6, 0.001],dtype = np.float))
-graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 1.0), PRIOR_NOISE))
+graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, np.pi/3), PRIOR_NOISE))
 
-graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 0.5), ODOMETRY_NOISE))
+
+print('test rotation')
+print(gtsam.Pose2(0.0, 0.0, np.pi/3).rotation().matrix())
+
+graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, np.pi/6), ODOMETRY_NOISE))
 
 initial_estimate = gtsam.Values()
 initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))

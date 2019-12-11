@@ -20,8 +20,25 @@ def between(p1, p2):
     H2 = np.eye(size)
     return result,H1,H2
 
+def rotation_matrix_between_vectors(a,b):
+    dim=3
+    a = a.reshape(-1)
+    b = b.reshape(-1)
+    if a.shape[0] == 2:
+        dim = 2
+        a = np.hstack([a,[0]])
+    if b.shape[0] == 2:
+        b = np.hstack([b,[0]])
+    v = np.cross(a,b)
+    s = np.linalg.norm(v)
+    c = a.dot(b)
+    # vx = 
+    print(np.linalg.norm(v))
+    # print (a,b)
+    pass
+
 def get_scale(x,x_original,cov):
-    
+
     return s,var
     pass
 
@@ -145,7 +162,9 @@ def scale_covariance(cov, s):
     #print(translation)
     #return(measured,noise,H)
 
-if __name__ == '__main__':
+rotation_matrix_between_vectors(np.array([1,0]),np.array([0,1]))
+
+if __name__ != '__main__':
     graph = gtsam.NonlinearFactorGraph()
 
     sb = np.zeros((3,3),dtype = np.float)
