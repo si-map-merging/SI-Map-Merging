@@ -1,5 +1,5 @@
 import numpy as np
-from .SIFactor import *
+from SIFactor import *
 
 class ScaleEstimation(object):
     """docstring for ScaleEstimation"""
@@ -7,6 +7,18 @@ class ScaleEstimation(object):
 
         self.lc_num = lc_num
         self.history = []
+
+    def get_reletive_pose(self, i , j):
+
+        pi = result.atPose2(i)
+        pj = result.atPose2(j)
+        key_vec = gtsam.gtsam.KeyVector()
+        key_vec.push_back(i)
+        key_vec.push_back(j)
+        cov = self.marginals.jointMarginalCovariance(key_vec).fullMatrix()
+        noise = cov_delta_xij(pi,pj,cov)
+        return pi.between(pj), noise
+
 
     def scale_estimate(self, poses, covs, index_list):
 
@@ -51,6 +63,29 @@ class ScaleEstimation(object):
         params = gtsam.LevenbergMarquardtParams()
         optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial_estimate, params)
         result = optimizer.optimize()
+
+
+        self.marginals = gtsam.Marginals(graph, result)
+
+        x45,noise45 = self.get_reletive_pose(4,5)
+        x56,noise56 = self.get_reletive_pose(5,6)
+        x46,noise46 = self.get_reletive_pose(4,6)
+
+        z14,noise14 = self.get_reletive_pose(1,4)
+        z25,noise25 = self.get_reletive_pose(2,5)
+        z36,noise36 = self.get_reletive_pose(3,6)
+
+
+        qb_list = [noise45,noise56,boise46]
+        new_xb_list = [x45,x56,x46]
+
+
+        sb,sb_std = get_scale3(new_xb_list, xb_list, qb_list)
+        s1,s1_std = get_scale(z14, z_list[0], noise14)
+        s2,s2_std = get_scale(z25, z_list[1], noise25)
+        s3,s3_std = get_scale(z36, z_list[2], noise36)
+
+        # self.history
 
 
 
