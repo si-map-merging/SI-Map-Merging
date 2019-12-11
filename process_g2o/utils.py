@@ -23,14 +23,17 @@ def get_upper_triangle(matrix):
     return matrix[np.triu_indices(M)]
 
 def cholesky_inverse(matrix):
-    """Get the inverse of a positive definite matrix
+    """Get the inverse of a positive definite matrix. Cholesky decomposition will
+    produce an error if the input matrix is not positive definite.
     Return:
          numpy array
     """
     L = np.linalg.cholesky(matrix)
-    inv = np.identity(np.size(matrix, 0))
-    inv = solve(L, inv, lower=True, overwrite_b=True, assume_a='pos')
-    return inv
+    print("L: ")
+    print(L)
+    I = np.identity(np.size(matrix, 0))
+    inv = solve(L.T, I)
+    return inv*inv.T
 
 class Quaternion:
     """Convenience wrapper around quaternion library

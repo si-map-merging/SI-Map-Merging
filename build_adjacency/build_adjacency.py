@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 import sophus as sp
 from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, \
-    Edge3D, Quaternion, cholesky_inverse
+    Edge3D, Quaternion#, cholesky_inverse
 from gtsam_optimize.optimization import Graph2D, Graph3D
 
 
@@ -62,11 +62,11 @@ class AdjacencyMatrix:
             for j in tqdm(range(i)):
                 mahlij = self.compute_mahalanobis_distance(self.inter_lc_edges[i], \
                          self.inter_lc_edges[j])
-                print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
+                # print("this mahlij for {} is: {}".format((i+1, j+1), mahlij))
                 if (mahlij <= self.gamma):
                     mahlji = self.compute_mahalanobis_distance(self.inter_lc_edges[j], \
                                                                 self.inter_lc_edges[i])
-                    print("this mahlji for {} is: {}".format((j+1, i+1), mahlji))
+                    # print("this mahlji for {} is: {}".format((j+1, i+1), mahlji))
                     if mahlji <= self.gamma:
                         adjacency_matrix[j, i] = 1
                         adjacency_matrix[i, j] = 1
@@ -98,8 +98,8 @@ class AdjacencyMatrix:
             x_ij = self.compute_current_estimate(ii, jj, 'a')
             x_lk = self.compute_current_estimate(ll, kk, 'b')
         else:
-            x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
-            x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+            x_ij = self.get_current_estimate_from_gtsam(ii, jj, 'a')
+            x_lk = self.get_current_estimate_from_gtsam(ll, kk, 'b')
         new_edge = self.compound_op(self.compound_op(self.compound_op( \
                                     self.inverse_op(z_ik), x_ij), z_jl), x_lk)
         s = np.array([[new_edge.x, new_edge.y, new_edge.theta]])
@@ -154,6 +154,20 @@ class AdjacencyMatrix:
         trans_pose = self.inverse_compound(start_pose, end_pose, robot_idx)
 
         return trans_pose
+
+    def get_current_estimate_from_gtsam(self, start, end, robot_idx):
+        """Using gtsam's between function to directly get current estimation
+        Return:
+            An Edge2D object describing the transformation from start to end
+        """
+        if robot_idx == 'a':
+            gtsam_graph = self.gtsam_graph1
+        elif robot_idx == 'b':
+            gtsam_graph = self.gtsam_graph2
+
+        transform, covariance = gtsam_graph.between(start, end)
+        info = self.to_info(covariance)
+        return Edge2D(start, end, transform[0], transform[1], transform[2], info)
 
     def optimized_node_to_virtual_edge(self, idx, robot_idx):
         """Convert a post-optimization Node with covariance to a 'virtual Edge'. The
@@ -275,6 +289,18 @@ class AdjacencyMatrix:
         new_info = self.to_info(new_cov)
         return Edge2D(pose1.i, pose2.j, new_x, new_y, new_theta, new_info)
 
+    @classmethod
+    def is_pos_def(cls, matrix):
+        """Check if a matrix is positive definite
+        Computing cholesky decomposition is much more efficient than computing eigenvalues.
+        Output: True or False
+        """
+        try:
+            np.linalg.cholesky(matrix)
+        except np.linalg.LinAlgError:
+            return False
+        return True
+
     def get_info_mat(self, pose):
         """Extract information matrix from pose
         """
@@ -295,7 +321,14 @@ class AdjacencyMatrix:
             A numpy array
         """
         info_mat = self.get_info_mat(pose)
-        cov_mat = cholesky_inverse(info_mat)
+        assert self.is_pos_def(info_mat), "info_mat is not positive definite!"
+        # cov_mat = cholesky_inverse(info_mat)
+        cov_mat = np.linalg.inv(info_mat)
+        # try:
+        #     cov_mat = cholesky_inverse(info_mat)
+        # except np.linalg.LinAlgError:
+        #     __import__("pdb").set_trace()
+
         assert self.check_symmetry(cov_mat)
         return cov_mat
 
@@ -321,7 +354,7 @@ class AdjacencyMatrix:
         Return:
             A vector
         """
-        info_mat = cholesky_inverse(cov)
+        info_mat = np.linalg.inv(cov)
         info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
                 info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
@@ -356,13 +389,13 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             x_lk = self.compute_current_estimate(ll, kk, 'b')
         else:
             if kk != ll and ii != jj:
-                x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
-                x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+                x_ij = self.get_current_estimate_from_gtsam(ii, jj, 'a')
+                x_lk = self.get_current_estimate_from_gtsam(ll, kk, 'b')
             else:               # two loop closures coincide
                 if kk == ll:
-                    x_ij = self.compute_current_estimate_after_optimization(ii, jj, 'a')
+                    x_ij = self.get_current_estimate_from_gtsam(ii, jj, 'a')
                 elif ii == jj:
-                    x_lk = self.compute_current_estimate_after_optimization(ll, kk, 'b')
+                    x_lk = self.get_current_estimate_from_gtsam(ll, kk, 'b')
 
         # for debug
         try:
@@ -417,6 +450,20 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             cov = self.gtsam_graph2.cov(idx)
             info = self.to_info(cov)
         return Edge3D('w', idx, translation, Quaternion.from_R(R).q, info)
+
+    def get_current_estimate_from_gtsam(self, start, end, robot_idx):
+        """Using gtsam's between function to directly get current estimation
+        Return:
+            An Edge3D object describing the transformation from start to end
+        """
+        if robot_idx == 'a':
+            gtsam_graph = self.gtsam_graph1
+        elif robot_idx == 'b':
+            gtsam_graph = self.gtsam_graph2
+
+        transform, covariance = gtsam_graph.between(start, end)
+        info = self.to_info(covariance)
+        return Edge3D(start, end, transform[0], Quaternion.from_R(transform[1]).q, info)
 
     def inverse_op(self, pose):
         """Compute x_ji given x_ij in the 3D case.
@@ -590,7 +637,8 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         sz = 21                  # size of `info`
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
-        info_mat = cholesky_inverse(cov)
+        assert self.is_pos_def(cov)
+        info_mat = np.linalg.inv(cov)
         # sym_info_mat = np.maximum(info_mat, info_mat.transpose())
         try:
             assert self.check_symmetry(info_mat)
@@ -635,7 +683,7 @@ if __name__ == "__main__":
                         default="process_g2o/output.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
-    parser.add_argument("dim", metavar="int", type=int, nargs='?', default=3,
+    parser.add_argument("dim", metavar="int", type=int, nargs='?', default=2,
                         help="Using 2D or 3D pose graph")
     args = parser.parse_args()
     if args.dim == 3:
@@ -652,6 +700,6 @@ if __name__ == "__main__":
     elif args.dim == 2:
         ADJ = AdjacencyMatrix(graph, gamma=0.1, optim=True)
     # adj.single_graphs_optimization()
-    ADJ.test_inverse_op()
+    # ADJ.test_inverse_op()
     coo_adj_mat = ADJ.build_adjacency_matrix()
     io.mmwrite(args.output_fpath, coo_adj_mat, field='integer', symmetry='symmetric')
