@@ -106,9 +106,10 @@ class ScaleEstimation(object):
         l_list = [l1,l2,l3]
         l_std_list = [l1_std, l2_std, l3_std]
         self.history.append((sb,sb_std,l_list,l_std_list))
-        self.sb_list.append(sb)
-        self.sb_std_list.append(sb_std)
-        self.sb_index_list.append(index)
+        if sb_std<5 and sb>0:
+            self.sb_list.append(sb)
+            self.sb_std_list.append(sb_std/2)
+            self.sb_index_list.append(index)
 
         for i,lc_index in enumerate(index_list):
             self.lc_list[lc_index].append(l_list[i])
@@ -125,7 +126,7 @@ class ScaleEstimation(object):
 
     def estimate_lc(self,c=1):
         for i in range(self.lc_num):
-            self.lc_result.append(adaptive_voting(self.lc_list[i],self.lc_std_list[i],c))
+            self.lc_result[i]=adaptive_voting(self.lc_list[i],self.lc_std_list[i],c)
         return self.lc_result
 
         # self.history

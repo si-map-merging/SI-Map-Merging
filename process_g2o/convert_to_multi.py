@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     if not args.is_3D:
       multi_graph.add_perceptual_aliasing_lc(2, 3)
-      multi_graph.vary_scale(2)
+      multi_graph.vary_scale(1.5)
     multi_graph.add_random_inter_lc(N=3)
     print("========== Noisy Multi Robot g2o Graph Summary ================")
     multi_graph.print_summary()
