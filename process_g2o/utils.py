@@ -242,11 +242,11 @@ class Edge2D:
         x = self.x * scale
         y = self.y * scale
         info = self.info.copy()
-        info[0] /= scale * scale
-        info[1] /= scale * scale
-        info[2] /= scale
-        info[3] /= scale * scale
-        info[4] /= scale
+        info[0] *= 1.0/(scale * scale)
+        info[1] *= 1.0/(scale * scale)
+        info[2] *= 1.0/scale
+        info[3] *= 1.0/(scale * scale)
+        info[4] *= 1.0/scale
         return Edge2D(self.i, self.j, x, y, self.theta, info, self.is_outlier)
 
     def info_mat(self):
