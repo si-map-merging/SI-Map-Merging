@@ -375,7 +375,8 @@ class AdjacencyMatrix:
         """Feed all combinations of 3 inter-robot loop closures into
             scale estimation module
         """
-        for indices in itertools.combinations(range(len(self.inter_lc_edges)), 3):
+        for indices in tqdm(itertools.combinations(
+                                range(len(self.inter_lc_edges)), 3)):
             i, j, k = indices
             edge1 = self.inter_lc_edges[i]
             edge2 = self.inter_lc_edges[j]

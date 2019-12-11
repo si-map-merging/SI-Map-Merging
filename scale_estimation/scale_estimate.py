@@ -1,10 +1,10 @@
 import numpy as np
-from SIFactor import *
+from .SIFactor import *
 
 class ScaleEstimation(object):
     """docstring for ScaleEstimation"""
     def __init__(self, lc_num):
-        
+
         self.lc_num = lc_num
         self.history = []
 
@@ -55,5 +55,4 @@ class ScaleEstimation(object):
 
 
 
-        
-        
+
