@@ -50,6 +50,14 @@ if __name__ == "__main__":
     for i, edge in enumerate(adj.inter_lc_edges, 1):
         print("{}: {}".format(i, edge))
 
+    total_lc = adj.inter_lc_n
+    positives = 0
+    for edge in adj.inter_lc_edges:
+        if not edge.is_outlier:
+            positives += 1
+    negatives = total_lc - positives
+
+
     # Call fmc on the adjacency matrix, to get trusted inter-robot loop closures
     fmc_path = "find_max_clique/fmc/src/fmc"
     trusted_lc_indices = find_max_clique(fmc_path, mtx_fpath)
@@ -58,6 +66,18 @@ if __name__ == "__main__":
     trusted_lc = adj.get_trusted_lc(trusted_lc_indices)
     multi_graph.set_inter_lc(trusted_lc)
     multi_graph.write_to(args.output_fpath)
+
+    true_pos = 0
+    for edge in trusted_lc:
+        if not edge.is_outlier:
+            true_pos += 1
+    false_pos = len(trusted_lc) - true_pos
+
+    TPR = true_pos / positives
+    print("TPR: {}".format(TPR))
+    FPR = false_pos / negatives
+    TNR = 1 - FPR
+    print("TNR: {}".format(TNR))
 
     # # Perform overall graph optimization
     # merged_graph = multi_graph.merge_to_single()

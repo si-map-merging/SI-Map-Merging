@@ -200,8 +200,9 @@ class Edge2D:
         theta: angle measurement
         info: information matrix, stored as the upper-triangular block in
               row-major order, in a list
+        is_outlier: whether this edge is an outlier, i.e fake edge
     """
-    def __init__(self, i, j, x, y, theta, info):
+    def __init__(self, i, j, x, y, theta, info, is_outlier=False):
         assert(len(info) == 6)
         self.i = i
         self.j = j
@@ -209,12 +210,13 @@ class Edge2D:
         self.y = y
         self.theta = theta
         self.info = info
+        self.is_outlier = is_outlier
 
     @staticmethod
-    def from_pose(i, j, pose, info):
+    def from_pose(i, j, pose, info, is_outlier=False):
         x, y = pose.x, pose.y
         theta = pose.theta
-        return Edge2D(i, j, x, y, theta, info)
+        return Edge2D(i, j, x, y, theta, info, is_outlier)
 
     def to_g2o(self):
         """Return a string representing the edge in g2o format
@@ -242,7 +244,7 @@ class Edge2D:
         info[2] /= scale
         info[3] /= scale * scale
         info[4] /= scale
-        return Edge2D(self.i, self.j, x, y, self.theta, info)
+        return Edge2D(self.i, self.j, x, y, self.theta, info, self.is_outlier)
 
     def info_mat(self):
         """
@@ -264,8 +266,8 @@ class Edge2D:
         return inv_Q(self.info_mat())
 
     def __str__(self):
-        return "{} {} {} {} {} {}".format(self.i, self.j, self.x, self.y, self.theta,
-                                   self.info)
+        return "{} {} {} {} {} {} {}".format(self.i, self.j, self.x, self.y, self.theta,
+                                   self.info, self.is_outlier)
 
     def __repr__(self):
         return str(self)
@@ -498,9 +500,10 @@ class MultiRobotGraph:
         """
         with open(fpath) as fp:
             line = self._process_meta(fp)
-            while line:
+            while line and not line.startswith("#Outlier"):
                 self._process_line(line)
                 line = fp.readline()
+            self._process_outlier(fp, line)
 
     def _process_meta(self, fp):
         """Process meta info of multi robot g2o
@@ -514,6 +517,14 @@ class MultiRobotGraph:
             self.ranges[robot_idx] = [start, end]
             line = fp.readline()
         return line
+
+    def _process_outlier(self, fp, line):
+        while line.startswith("#Outlier"):
+            values = line.split()
+            i = int(values[1])
+            j = int(values[2])
+            self.inter_lc[(i, j)].is_outlier = True
+            line = fp.readline()
 
     def read_nodes(self, nodes):
         """Split single robot nodes into nodes for 2 robots
@@ -572,6 +583,12 @@ class MultiRobotGraph:
         for edges in self.odoms + self.lc + [self.inter_lc]:
             for edge in edges.values():
                 fp.write(edge.to_g2o() + "\n")
+
+        for edge in self.inter_lc.values():
+            if edge.is_outlier:
+                line = "#Outlier {} {}\n".format(edge.i, edge.j)
+                fp.write(line)
+
 
     def print_summary(self):
         """Print summary of the multi robot graph
@@ -685,7 +702,8 @@ class MultiRobotGraph2D(MultiRobotGraph):
                                 random.normalvariate(x_mu, x_sigma),
                                 random.normalvariate(y_mu, y_sigma),
                                 random.normalvariate(theta_mu, theta_sigma),
-                                info)
+                                info,
+                                is_outlier=True)
                             for _ in range(N)]
         random_inter_lc = {(edge.i, edge.j) : edge for edge in random_inter_lc}
         self.inter_lc.update(random_inter_lc)
@@ -751,7 +769,7 @@ class MultiRobotGraph2D(MultiRobotGraph):
             # Random initial lc edge
             pose_ij = Pose2D.random(x_mu, x_sigma, y_mu, y_sigma, theta_mu,
                                     theta_sigma)
-            edge = Edge2D.from_pose(i, j, pose_ij, info)
+            edge = Edge2D.from_pose(i, j, pose_ij, info, is_outlier=True)
             new_lc[(i, j)] = edge
 
             prev_i = i
@@ -766,7 +784,7 @@ class MultiRobotGraph2D(MultiRobotGraph):
 
                 # Construct next consistent lc edge
                 pose_ij = pose_i_iprev * prev_pose_ij * pose_jprev_j
-                edge = Edge2D.from_pose(i, j, pose_ij, info)
+                edge = Edge2D.from_pose(i, j, pose_ij, info, is_outlier=True)
                 new_lc[(i, j)] = edge
 
                 prev_i = i
