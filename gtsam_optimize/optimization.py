@@ -3,6 +3,7 @@ GTSAM Optimization
 """
 import numpy as np
 import gtsam
+from .SIFactor import compound_pose, construct_SIFactor2
 
 
 
