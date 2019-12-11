@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 import sophus as sp
 from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, \
-    Edge3D, Quaternion#, cholesky_inverse
+    Edge3D, Quaternion, cholesky_inverse
 from gtsam_optimize.optimization import Graph2D, Graph3D
 import gtsam
 from scale_estimation.scale_estimate import ScaleEstimation
@@ -366,7 +366,7 @@ class AdjacencyMatrix:
         Return:
             A vector
         """
-        info_mat = np.linalg.inv(cov)
+        info_mat = cholesky_inverse(cov)
         info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
                 info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
@@ -645,7 +645,6 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         prev_cov[6:, 6:] = cov2
 
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
-        # __import__("pdb").set_trace()
 
         new_info = self.to_info(new_cov)
         return Edge3D(pose1.i, pose2.j, new_t, new_q, new_info)
@@ -692,7 +691,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
         assert self.is_pos_def(cov)
-        info_mat = np.linalg.inv(cov)
+        info_mat = cholesky_inverse(cov)
         # sym_info_mat = np.maximum(info_mat, info_mat.transpose())
         try:
             assert self.check_symmetry(info_mat)

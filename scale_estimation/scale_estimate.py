@@ -40,6 +40,14 @@ class ScaleEstimation(object):
         measured,noise,H=construct_SIFactor2(z_list[2],qab_list[2])
         graph.add(gtsam.SIBetweenFactorPose2(3, 6, measured, noise, H))
 
+        initial_estimate = gtsam.Values()
+        initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.3))
+        initial_estimate.insert(2, gtsam.Pose2(2.3, 0.1, -0.6))
+        initial_estimate.insert(3, gtsam.Pose2(2.3, 2.1, -0.5))
+        initial_estimate.insert(4, gtsam.Pose2(0.2, 3.0, 0.2))
+        initial_estimate.insert(5, gtsam.Pose2(5.8, 2.1, -0.6))
+        initial_estimate.insert(6, gtsam.Pose2(6.3, 1.1, -0.3))
+
         params = gtsam.LevenbergMarquardtParams()
         optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial_estimate, params)
         result = optimizer.optimize()
