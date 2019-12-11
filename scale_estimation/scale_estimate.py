@@ -76,7 +76,7 @@ class ScaleEstimation(object):
         z36,noise36 = self.get_reletive_pose(3,6)
 
 
-        qb_list = [noise45,noise56,boise46]
+        qb_list = [noise45,noise56,noise46]
         new_xb_list = [x45,x56,x46]
 
 
