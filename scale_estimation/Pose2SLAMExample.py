@@ -37,19 +37,19 @@ graph = gtsam.NonlinearFactorGraph()
 
 # 2a. Add a prior on the first pose, setting it to the origin
 # A prior factor consists of a mean and a noise ODOMETRY_NOISE (covariance matrix)
-graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0, 0, 0), PRIOR_NOISE))
+graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0, 0, 1.), PRIOR_NOISE))
 
 # 2b. Add odometry factors
 # Create odometry (Between) factors between consecutive poses
 sb = np.zeros((3,3),dtype = np.float)
-np.fill_diagonal(sb, [0.2*0.2,0.2*0.2,0.1*0.1])
+np.fill_diagonal(sb, [0.4*0.4,0.2*0.2,0.1*0.1])
 ODOMETRY_NOISE = gtsam.noiseModel_Gaussian.Covariance(sb)
-graph.add(gtsam.SIBetweenFactorPose2(1, 2, gtsam.Pose2(2, 0, 0), ODOMETRY_NOISE))
+graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2, 0, 0), ODOMETRY_NOISE))
 
 graph.add(gtsam.BetweenFactorPose2(
     2, 3, gtsam.Pose2(2, 0, math.pi / 2), ODOMETRY_NOISE))
 graph.add(gtsam.BetweenFactorPose2(
-    3, 4, gtsam.Pose2(2, 0, math.pi / 2), ODOMETRY_NOISE))
+    3, 4, gtsam.Pose2(2, 0, 1.23*math.pi / 2), ODOMETRY_NOISE))
 graph.add(gtsam.BetweenFactorPose2(
     4, 5, gtsam.Pose2(2, 0, math.pi / 2), ODOMETRY_NOISE))
 
@@ -92,6 +92,21 @@ print("Final Result:\n{}".format(result))
 marginals = gtsam.Marginals(graph, result)
 for i in range(1, 6):
     print("X{} covariance:\n{}\n".format(i, marginals.marginalCovariance(i)))
+
+# marginals = gtsam.Marginals(graph, result)
+key_vec = gtsam.gtsam.KeyVector()
+key_vec.push_back(1)
+key_vec.push_back(2)
+key_vec.push_back(3)
+key_vec.push_back(4)
+key_vec.push_back(5)
+
+ss = marginals.jointMarginalCovariance(key_vec).at(1,1)
+print(ss)
+
+print('eigen')
+w,_ = np.linalg.eig(ss)
+print(w)
 
 fig = plt.figure(0)
 for i in range(1, 6):

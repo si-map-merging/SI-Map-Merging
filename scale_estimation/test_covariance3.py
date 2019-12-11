@@ -22,8 +22,8 @@ ODOMETRY_NOISE = gtsam.noiseModel_Gaussian.Covariance(sb)
 PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([1.6, 0.6, 0.1],dtype = np.float))
 graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 1.0), PRIOR_NOISE))
 
-graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 0.0), ODOMETRY_NOISE))
-graph.add(gtsam.BetweenFactorPose2(2, 3, gtsam.Pose2(-2.0, 2.0, 0.0), ODOMETRY_NOISE))
+graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 1.2), ODOMETRY_NOISE))
+graph.add(gtsam.BetweenFactorPose2(2, 3, gtsam.Pose2(-2.0, 2.0, 1.7), ODOMETRY_NOISE))
 
 initial_estimate = gtsam.Values()
 initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
@@ -38,14 +38,22 @@ print("Final Result:\n{}".format(result))
 
 marginals = gtsam.Marginals(graph, result)
 key_vec = gtsam.gtsam.KeyVector()
+
 key_vec.push_back(1)
 key_vec.push_back(2)
 key_vec.push_back(3)
 print('joint marginals')
 jb = marginals.jointMarginalCovariance(key_vec).fullMatrix()
-jb[np.where(np.abs(jb)>1e-6)]=1
-jb[np.where(np.abs(jb)<=1e-6)]=0
+# jb[np.where(np.abs(jb)>1e-6)]=1
+# jb[np.where(np.abs(jb)<=1e-6)]=0
 print(jb)
+ss = marginals.jointMarginalCovariance(key_vec).at(2,1)
+print(ss)
+
+print('eigen')
+w,_ = np.linalg.eig(ss)
+print(w)
+
 
 
 

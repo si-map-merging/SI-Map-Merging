@@ -9,6 +9,19 @@ import gtsam
 import matplotlib.pyplot as plt
 import gtsam.utils.plot as gtsam_plot
 
+def cov_delta_xij(xi,xj,cov):
+    _,H1,H2 = between(xi,xj)
+    A = np.hstack([H1,H2])
+    return A @ cov @ A.T
+
+
+def between(p1,p2):
+    result = p1.inverse().compose(p2)
+    H1 = -result.inverse().AdjointMap()
+    size = H1.shape[0]
+    H2 = np.eye(size)
+    return result,H1,H2
+
 graph = gtsam.NonlinearFactorGraph()
 
 sb = np.zeros((3,3),dtype = np.float)
@@ -22,6 +35,7 @@ PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.3, 0.3, 0.1],dtype = 
 graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 0.0), PRIOR_NOISE))
 
 graph.add(gtsam.SIBetweenFactorPose2(1, 2, gtsam.Pose2(1.0, 0.0, 1.0), ODOMETRY_NOISE))
+graph.add(gtsam.SIBetweenFactorPose2(1, 2, gtsam.Pose2(1.0, 1.0, 0.2), ODOMETRY_NOISE))
 graph.add(gtsam.SIBetweenFactorPose2(2, 3, gtsam.Pose2(-1.0, 1.0, 0.0), ODOMETRY_NOISE))
 graph.add(gtsam.SIBetweenFactorPose2(3, 1, gtsam.Pose2(0.0, -1.0, -0.5), ODOMETRY_NOISE))
 
@@ -44,10 +58,26 @@ marginals = gtsam.Marginals(graph, result)
 key_vec = gtsam.gtsam.KeyVector()
 key_vec.push_back(1)
 key_vec.push_back(2)
-key_vec.push_back(3)
 print('joint marginals')
-print(marginals.jointMarginalCovariance(key_vec).fullMatrix())
+cov = marginals.jointMarginalCovariance(key_vec).fullMatrix()
 
+print('eigen')
+w,_ = np.linalg.eig(cov)
+print(w)
+
+p1 = result.atPose2(1)
+p2 = result.atPose2(2)
+
+cov = cov_delta_xij(p1,p2,cov)
+# print(ODOMETRY_NOISE)
+
+# print('eigen')
+# w,_ = np.linalg.eig(cov)
+# print(w)
+
+print('eigen')
+w,_ = np.linalg.eig(cov)
+print(w)
 
 marginals = gtsam.Marginals(graph, result)
 for i in range(1, 4):

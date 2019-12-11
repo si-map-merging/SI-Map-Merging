@@ -20,6 +20,8 @@ def cov_delta_xij(xi,xj,cov):
     A = np.hstack([H1,H2])
     return A @ cov @ A.T
 
+def cov_delta_xijk(xi,xj,cov):
+    pass
 
 def between(p1,p2):
     result = p1.inverse().compose(p2)
