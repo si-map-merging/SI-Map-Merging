@@ -27,8 +27,8 @@ def inv_Q(Q):
     Q_inv = NOISE.information()
     return Q_inv
 
-def construct_SIFactor2(xi,xj,cov):
-    measured = xi.between(xj)
+def construct_SIFactor2(measured,cov):
+    #measured = xi.between(xj)
     # print(type(joint_marginal_matrix))
 
     #cov = cov_delta_xij(xi,xj,joint_marginal_matrix)
@@ -36,7 +36,7 @@ def construct_SIFactor2(xi,xj,cov):
         cov = cov.covariance()
 
     size = cov.shape[0]
-    dim = xi.translation().vector().shape[0]
+    dim = measured.translation().vector().shape[0]
     # print(ti.shape[0])
 
 
@@ -98,6 +98,14 @@ def construct_SIFactor2(xi,xj,cov):
 
     # print(np.linalg.matrix_rank(H))
 
+def scale_normalizae(p, Q, t=1.):
+    translation = p.translation().vector()
+    s = 1./translation.norm()
+    p = scale_pose(p,s)
+    Q = scale_covariance(Q,s)
+    return p,Q
+    pass
+
 def scale_pose(p,s):
     #print(p)
     T_trans = type(p.translation())
@@ -147,13 +155,13 @@ if __name__ == '__main__':
     ODOMETRY_NOISE = gtsam.noiseModel_Gaussian.Covariance(sb)
 
     PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.6, 0.2, 0.1],dtype = np.float))
-    graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 0.0), PRIOR_NOISE))
+    graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 1.0), PRIOR_NOISE))
 
-    graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 0.), ODOMETRY_NOISE))
+    graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 0.5), ODOMETRY_NOISE))
 
-    graph.add(gtsam.BetweenFactorPose2(2, 3, gtsam.Pose2(0.0, 2.0, 0.0), ODOMETRY_NOISE))
+    graph.add(gtsam.BetweenFactorPose2(2, 3, gtsam.Pose2(0.0, 2.0, 0.2), ODOMETRY_NOISE))
 
-    graph.add(gtsam.BetweenFactorPose2(3, 1, gtsam.Pose2(-2.0, -2.0, -0.), ODOMETRY_NOISE))
+    graph.add(gtsam.BetweenFactorPose2(3, 1, gtsam.Pose2(-2.0, -2.0, -0.3), ODOMETRY_NOISE))
 
     initial_estimate = gtsam.Values()
     initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
@@ -231,13 +239,13 @@ if __name__ == '__main__':
     # x23 = between(p2,p3)
     # x13 = between(p1,p3)
     
-    measured,noise,H=construct_SIFactor2(p1,p2,NOISE12)
+    measured,noise,H=construct_SIFactor2(p1.between(p2),NOISE12)
     graph.add(gtsam.SIBetweenFactorPose2(1, 2, measured, noise, H))
 
-    measured,noise,H=construct_SIFactor2(p2,p3,NOISE23)
+    measured,noise,H=construct_SIFactor2(p2.between(p3),NOISE23)
     graph.add(gtsam.SIBetweenFactorPose2(2, 3, measured, noise, H))
 
-    measured,noise,H=construct_SIFactor2(p1,p3,NOISE13)
+    measured,noise,H=construct_SIFactor2(p1.between(p3),NOISE13)
     graph.add(gtsam.SIBetweenFactorPose2(1, 3, measured, noise, H))
 
     
@@ -246,10 +254,10 @@ if __name__ == '__main__':
     #print('test scale')
     # scale_covariance(,2)
 
-    initial_estimate = gtsam.Values()
-    initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
-    initial_estimate.insert(2, gtsam.Pose2(2.3, 0.1, -0.2))
-    initial_estimate.insert(3, gtsam.Pose2(5.3, 2.1, -0.2))
+    # initial_estimate = gtsam.Values()
+    # initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
+    # initial_estimate.insert(2, gtsam.Pose2(2.3, 0.1, -0.2))
+    # initial_estimate.insert(3, gtsam.Pose2(5.3, 2.1, -0.2))
 
     params = gtsam.LevenbergMarquardtParams()
     optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial_estimate, params)

@@ -34,7 +34,7 @@ ODOMETRY_NOISE = gtsam.noiseModel_Gaussian.Covariance(sb)
 PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([1.6, 0.6, 0.001],dtype = np.float))
 graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 1.0), PRIOR_NOISE))
 
-graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 0.0), ODOMETRY_NOISE))
+graph.add(gtsam.BetweenFactorPose2(1, 2, gtsam.Pose2(2.0, 0.0, 0.5), ODOMETRY_NOISE))
 
 initial_estimate = gtsam.Values()
 initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
@@ -47,10 +47,11 @@ result = optimizer.optimize()
 
 marginals = gtsam.Marginals(graph, result)
 key_vec = gtsam.gtsam.KeyVector()
-key_vec.push_back(1)
 key_vec.push_back(2)
+key_vec.push_back(1)
 print('joint marginals')
 cov = marginals.jointMarginalCovariance(key_vec).fullMatrix()
+print(cov)
 
 p1 = result.atPose2(1)
 p2 = result.atPose2(2)
