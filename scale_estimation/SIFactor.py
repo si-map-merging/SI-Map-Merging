@@ -32,7 +32,13 @@ def rotation_matrix_between_vectors(a,b):
     v = np.cross(a,b)
     s = np.linalg.norm(v)
     c = a.dot(b)
-    # vx = 
+    vx = np.array([
+        [0, -v[2], v[1]],
+        [v[2], 0, -v[0]],
+        [-v[1], v[0], 0.],
+        ])
+    # f = 
+    R = I + vx + vx @ vx *(1-c)/s**2
     print(np.linalg.norm(v))
     # print (a,b)
     pass
@@ -99,16 +105,16 @@ def construct_SIFactor2(measured,cov):
         [np.zeros((size-dim,Ht.shape[1])),np.eye(size-dim)]])
 
     #print(H)
-    print(measured)
+    #print(measured)
 
     H = H @ J
-    print(H)
+    #print(H)
 
     noise = H @ J @ cov @ J.T @ H.T
     #noise = J@cov@J.T
-    print(noise)
+    #print(noise)
 
-    print()
+    #print()
     return measured,gtsam.noiseModel_Gaussian.Covariance(noise),H
 
 
@@ -162,9 +168,9 @@ def scale_covariance(cov, s):
     #print(translation)
     #return(measured,noise,H)
 
-rotation_matrix_between_vectors(np.array([1,0]),np.array([0,1]))
+# rotation_matrix_between_vectors(np.array([1,0]),np.array([0,1]))
 
-if __name__ != '__main__':
+if __name__ == '__main__':
     graph = gtsam.NonlinearFactorGraph()
 
     sb = np.zeros((3,3),dtype = np.float)
