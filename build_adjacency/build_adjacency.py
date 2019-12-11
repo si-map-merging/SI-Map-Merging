@@ -375,8 +375,9 @@ class AdjacencyMatrix:
         """Feed all combinations of 3 inter-robot loop closures into
             scale estimation module
         """
-        for indices in tqdm(itertools.combinations(
-                                range(len(self.inter_lc_edges)), 3)):
+        return
+        combs = list(itertools.combinations(range(len(self.inter_lc_edges)), 3))
+        for indices in tqdm(combs):
             i, j, k = indices
             edge1 = self.inter_lc_edges[i]
             edge2 = self.inter_lc_edges[j]
@@ -407,11 +408,22 @@ class AdjacencyMatrix:
     def correct_for_scale(self):
         """Get the estimated scales, and correct the graph for these scales
         """
-        s_b, lc_scales = self.scale_estimator.get_scales()
-        self.graph.scale_robot_b(s_b)
-        for i in range(len(self.inter_lc_n)):
-            s_l = self.lc_scales[i]
-            self.inter_lc_edges[i] *= s_l
+        #s_b, lc_scales = self.scale_estimator.get_scales()
+        s_b = 0.2
+        lc_scales = [1]*self.inter_lc_n
+
+        # Correct for robot b scale
+        self.graph.scale_robot_b( 1.0/s_b )
+
+        # Scale inter-robot lc
+        for i in range(self.inter_lc_n):
+            s_l = lc_scales[i]
+            self.inter_lc_edges[i] *= 1.0/s_l
+
+        # Replace graph inter-robot lc with the corrected ones
+        for lc in self.inter_lc_edges:
+            key = (lc.i, lc.j)
+            self.graph.inter_lc[key] = lc
 
 
 class AdjacencyMatrix3D(AdjacencyMatrix):
