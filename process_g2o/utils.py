@@ -4,7 +4,7 @@
 import random
 import math
 from math import sqrt
-from scipy.linalg import solve
+import gtsam
 import numpy as np
 import quaternion
 import sophus as sp
@@ -22,18 +22,16 @@ def get_upper_triangle(matrix):
     assert(M == N)
     return matrix[np.triu_indices(M)]
 
-def cholesky_inverse(matrix):
+def cholesky_inverse(mat):
     """Get the inverse of a positive definite matrix. Cholesky decomposition will
-    produce an error if the input matrix is not positive definite.
+    produce an error if the input matrix is not positive definite. Currently assuming
+    the input matrix is a covariance matrix.
     Return:
          numpy array
     """
-    L = np.linalg.cholesky(matrix)
-    print("L: ")
-    print(L)
-    I = np.identity(np.size(matrix, 0))
-    inv = solve(L.T, I)
-    return inv*inv.T
+    noise = gtsam.noiseModel_Gaussian.Covariance(mat)
+    inv = noise.information()
+    return inv
 
 class Quaternion:
     """Convenience wrapper around quaternion library

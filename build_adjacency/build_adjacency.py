@@ -2,13 +2,16 @@
 Build the adjacency matrix
 """
 import argparse
+import itertools
 from scipy import io, sparse
 import numpy as np
 from tqdm import tqdm
 import sophus as sp
 from process_g2o.utils import MultiRobotGraph2D, Edge2D, MultiRobotGraph3D, \
-    Edge3D, Quaternion#, cholesky_inverse
+    Edge3D, Quaternion, cholesky_inverse
 from gtsam_optimize.optimization import Graph2D, Graph3D
+import gtsam
+from scale_estimation.scale_estimate import ScaleEstimation
 
 
 class AdjacencyMatrix:
@@ -28,6 +31,7 @@ class AdjacencyMatrix:
         self.graph = multi_rob_graph
         self.inter_lc_n = len(multi_rob_graph.inter_lc)
         self.inter_lc_edges = list(multi_rob_graph.inter_lc.values())
+        self.scale_estimator = ScaleEstimation(len(self.inter_lc_edges))
         if optim and dim2:
             graph1, graph2 = self.graph.to_singles()
             self.gtsam_graph1 = Graph2D(graph1)
@@ -38,7 +42,6 @@ class AdjacencyMatrix:
             self.gtsam_graph2.optimize()
             self.gtsam_graph1.print_stats()
             self.gtsam_graph2.print_stats()
-
 
     def get_trusted_lc(self, indices):
         """Get trusted loop closure edges
@@ -354,10 +357,43 @@ class AdjacencyMatrix:
         Return:
             A vector
         """
-        info_mat = np.linalg.inv(cov)
+        info_mat = cholesky_inverse(cov)
         info = [info_mat[0, 0], info_mat[0, 1], info_mat[0, 2], \
                 info_mat[1, 1], info_mat[1, 2], info_mat[2, 2]]
         return info
+
+    def feed_lc(self):
+        """Feed all combinations of 3 inter-robot loop closures into
+            scale estimation module
+        """
+        for indices in itertools.combinations(range(len(self.inter_lc_edges), 3)):
+            i, j, k = indices
+            edge1 = self.inter_lc_edges[i]
+            edge2 = self.inter_lc_edges[j]
+            edge3 = self.inter_lc_edges[k]
+
+            # Fill loop closure values and covariances
+            z_values = []
+            Q_z_values = []
+            for idx in indices:
+                edge = self.inter_lc_edges[idx]
+                z_values.append( gtsam.Pose2(*edge.measurement() ))
+                Q_z_values.append( gtsam.noiseModel_Gaussian.Covariance(edge.cov()))
+
+            # Compute relative poses
+            x_a_ij, Q_a_ij = self.gtsam_graph1.between( edge1.i, edge2.i )
+            x_a_jk, Q_a_jk = self.gtsam_graph1.between( edge2.i, edge3.i )
+            x_a_ik, Q_a_ik = self.gtsam_graph1.between( edge1.i, edge3.i )
+
+            x_b_ij, Q_b_ij = self.gtsam_graph1.between( edge1.j, edge2.j )
+            x_b_jk, Q_b_jk = self.gtsam_graph1.between( edge2.j, edge3.j )
+            x_b_ik, Q_b_ik = self.gtsam_graph1.between( edge1.j, edge3.j )
+
+            # Assemble values
+            poses = [[x_a_ij, x_a_jk, x_a_ik], [x_b_ij, x_b_jk, x_b_ik], z_values]
+            covs = [[Q_a_ij, Q_a_jk, Q_a_ik], [Q_b_ij, Q_b_jk, Q_b_ik], Q_z_values]
+            self.scale_estimator.scale_estimate(poses, covs, indices)
+
 
 class AdjacencyMatrix3D(AdjacencyMatrix):
     """Building adjacency matrix from single 3D pose graphs.
@@ -577,7 +613,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
             # J_minus = np.linalg.inv(J_minus_easy)
             # print("J_minus_easy: \n")
             # print(J_minus_easy)
-            # print("J_minus: \n") 
+            # print("J_minus: \n")
             # print(J_minus)
             J_minus = self.compute_J_minus(self.inverse_op(pose1))
             # print("J_minus_hard: \n")
@@ -591,7 +627,6 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         prev_cov[6:, 6:] = cov2
 
         new_cov = np.matmul(np.matmul(J_plus, prev_cov), J_plus.T)
-        __import__("pdb").set_trace()
 
         new_info = self.to_info(new_cov)
         return Edge3D(pose1.i, pose2.j, new_t, new_q, new_info)
@@ -638,7 +673,7 @@ class AdjacencyMatrix3D(AdjacencyMatrix):
         N = 6                  # size of `info_mat`
         info = np.zeros([sz,])
         assert self.is_pos_def(cov)
-        info_mat = np.linalg.inv(cov)
+        info_mat = cholesky_inverse(cov)
         # sym_info_mat = np.maximum(info_mat, info_mat.transpose())
         try:
             assert self.check_symmetry(info_mat)
@@ -680,7 +715,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Build the adjacency matrix given one g2o file")
     parser.add_argument("input_fpath", metavar="city10000.g2o", type=str, nargs='?',
-                        default="process_g2o/output.g2o", help="g2o file path")
+                        default="../process_g2o/output.g2o", help="g2o file path")
     parser.add_argument("output_fpath", metavar="adjacency.mtx", type=str, nargs='?',
                         default="adjacency.mtx", help="adjacency file path")
     parser.add_argument("dim", metavar="int", type=int, nargs='?', default=2,
