@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import gtsam.utils.plot as gtsam_plot
 
 
+
 def cov_delta_xij(xi, xj, joint_marginal_matrix):
     _,H1,H2 = between(xi,xj)
     A = np.hstack([H1,H2])
@@ -19,6 +20,45 @@ def between(p1, p2):
     size = H1.shape[0]
     H2 = np.eye(size)
     return result,H1,H2
+
+def get_reletive_pose(result,marginals, i , j):
+
+        pi = result.atPose2(i)
+        pj = result.atPose2(j)
+        key_vec = gtsam.gtsam.KeyVector()
+        key_vec.push_back(i)
+        key_vec.push_back(j)
+        cov = marginals.jointMarginalCovariance(key_vec).fullMatrix()
+        noise = cov_delta_xij(pi,pj,cov)
+        return pi.between(pj), noise
+
+def compound_pose(xij,xjk,noiseij,noisejk):
+
+    graph = gtsam.NonlinearFactorGraph()
+
+    PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.0001, 0.0001, 0.0001],dtype = np.float))
+    graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 0.0), PRIOR_NOISE))
+
+    noiseij = gtsam.noiseModel_Gaussian.Covariance(noiseij)
+    noisejk = gtsam.noiseModel_Gaussian.Covariance(noisejk)
+
+    graph.add(gtsam.BetweenFactorPose2(1, 2, xij, noiseij))
+    graph.add(gtsam.BetweenFactorPose2(2, 3, xjk, noisejk))
+
+    initial_estimate = gtsam.Values()
+    initial_estimate.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
+    initial_estimate.insert(2, gtsam.Pose2(2.3, 0.1, -0.2))
+    initial_estimate.insert(3, gtsam.Pose2(2., 0.1, -0.2))
+
+    params = gtsam.LevenbergMarquardtParams()
+    optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial_estimate, params)
+    result = optimizer.optimize()
+
+    marginals = gtsam.Marginals(graph, result)
+
+    return get_reletive_pose(result, marginals, 1, 3)
+
+
 
 def inv_Q(Q):
     NOISE = gtsam.noiseModel_Gaussian.Covariance(Q)
@@ -287,6 +327,9 @@ def scale_covariance(cov, s):
 
     #print(translation)
     #return(measured,noise,H)
+
+# def get_noise_jk():
+#     pass
 
 # print(rotation_matrix_between_vectors(np.array([1,0]),np.array([0.5,np.sqrt(3)/2])))
 

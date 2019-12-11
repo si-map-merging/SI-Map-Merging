@@ -131,6 +131,55 @@ class Graph2D(Graph):
                         gtsam.Pose2(*min_node.pose()),
                         PRIOR_NOISE))
 
+    def add_SI_factors_odometry(self,b_odometry_edges_list):
+        '''
+        add scale invariane between factor
+        element in b_odometry_edges_list are consequent odometry poses of robot b
+        for example: [(edge1, edge2), (edge2,edge3),...]
+        edge1.i = 1
+        edge1.j = 2
+        edge2.i = 2
+        edge2.j = 3 
+        ...
+        '''
+        gtsam_graph = self.graph
+        for edge1, edge2 in b_odometry_edges_list:
+            i, j ,k= edge1.i, edge1.j, edge2.j
+            xij = gtsam.Pose2(edge1.x,edge1.y,edge1.theta)
+            xjk = gtsam.Pose2(edge2.x,edge2.y,edge2.theta)
+
+            noiseij = gtsam.noiseModel_Diagonal.Sigmas(
+                            vector3(*edge1.diagonal_sigmas())).covariance()
+            noiseik = gtsam.noiseModel_Diagonal.Sigmas(
+                            vector3(*edge2.diagonal_sigmas())).covariance()
+
+            xik, noiseik = compound_pose(xij,xjk,noiseij,noiseik)
+
+            measured,noise,H=construct_SIFactor2(xij,noiseij)
+            gtsam_graph.add(gtsam.SIBetweenFactorPose2(i, j, measured, noise, H))
+
+            measured,noise,H=construct_SIFactor2(xjk,noisejk)
+            gtsam_graph.add(gtsam.SIBetweenFactorPose2(j, k, measured, noise, H))
+
+            measured,noise,H=construct_SIFactor2(xik,noiseik)
+            gtsam_graph.add(gtsam.SIBetweenFactorPose2(i, k, measured, noise, H))
+
+    def add_lc_factor(self, lc_list):
+        '''
+        lc_list is loop colsure between a,b
+        '''
+        gtsam_graph = self.graph
+
+        for edge in lc_list:
+            i, j = edge.i, edge.j
+            noise = gtsam.noiseModel_Diagonal.Sigmas(
+                            vector3(*edge.diagonal_sigmas())).covariance()
+            x = gtsam.Pose2(edge.x,edge.y,edge.theta)
+
+            measured,noise,H=construct_SIFactor2(x,noise)
+            gtsam_graph.add(gtsam.SIBetweenFactorPose2(i, j, measured, noise, H))
+
+
     def add_factors(self):
         """Add odometry factors & loop closure factors
         """
