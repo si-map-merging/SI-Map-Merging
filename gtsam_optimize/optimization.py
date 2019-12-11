@@ -90,17 +90,25 @@ class Graph:
         result: a 3x1 numpy array
                 the covariance between pose i and pose j
         """
+        result, cov = self.pos_and_cov(idxi, idxj)
+
+        result_pose = np.array([result.x(), result.y(), result.theta()])
+        return result_pose, cov
+
+    def pos_and_cov(self, idxi, idxj):
+        """Return relative Pose2D between pose i and pose j, and the covariance
+        """
         posei = self.result.atPose2(idxi)
         posej = self.result.atPose2(idxj)
         result = posei.inverse().compose(posej)
-        result_pose = np.array([result.x(), result.y(), result.theta()])
         H1 = -result.inverse().AdjointMap()
         size = H1.shape[0]
         H2 = np.eye(size)
         A = np.hstack([H1, H2])
         covij = self.joint_marginal(idxi, idxj)
 
-        return result_pose, A @ covij @ A.T
+        cov = A @ covij @ A.T
+        return result, gtsam.noiseModel_Gaussian.Covariance(cov)
 
     def write_to(self, fpath):
         """Write the optimized graph as g2o file
