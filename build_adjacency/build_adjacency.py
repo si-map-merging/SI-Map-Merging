@@ -375,13 +375,22 @@ class AdjacencyMatrix:
         """Feed all combinations of 3 inter-robot loop closures into
             scale estimation module
         """
-        return
+        # return
         combs = list(itertools.combinations(range(len(self.inter_lc_edges)), 3))
         for indices in tqdm(combs):
             i, j, k = indices
             edge1 = self.inter_lc_edges[i]
             edge2 = self.inter_lc_edges[j]
             edge3 = self.inter_lc_edges[k]
+
+            def contain_same_nodes(edge1, edge2, edge3):
+                indices = set([edge1.i, edge1.j, edge2.i, edge2.j, edge3.i,
+                                edge3.j] )
+                if len(indices) < 6:
+                    return True
+                return False
+            if contain_same_nodes(edge1, edge2, edge3):
+                continue
 
             # Fill loop closure values and covariances
             z_values = []
@@ -403,7 +412,12 @@ class AdjacencyMatrix:
             # Assemble values
             poses = [[x_a_ij, x_a_jk, x_a_ik], [x_b_ij, x_b_jk, x_b_ik], z_values]
             covs = [[Q_a_ij, Q_a_jk, Q_a_ik], [Q_b_ij, Q_b_jk, Q_b_ik], Q_z_values]
-            self.scale_estimator.scale_estimate(poses, covs, indices)
+            scales, stds = self.scale_estimator.scale_estimate(poses, covs, indices)
+            if (not edge1.is_outlier and not edge2.is_outlier and not edge3.is_outlier):
+                print("i: {}, j: {}, k: {}".format(i, j, k))
+                print(scales)
+                print(stds)
+                print("=============")
 
     def correct_for_scale(self):
         """Get the estimated scales, and correct the graph for these scales
