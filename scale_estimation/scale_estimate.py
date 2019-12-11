@@ -85,6 +85,10 @@ class ScaleEstimation(object):
         s2,s2_std = get_scale(z25, z_list[1], noise25)
         s3,s3_std = get_scale(z36, z_list[2], noise36)
 
+        s_list = [sb,s1,s2,s3]
+        std_list = [sb_std, s1_std, s2_std, s3_std]
+        return s_list,std_list
+
         # self.history
 
 
