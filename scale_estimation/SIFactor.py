@@ -1,13 +1,11 @@
 from __future__ import print_function
 
 import math
-
 import numpy as np
-
 import gtsam
-
 import matplotlib.pyplot as plt
 import gtsam.utils.plot as gtsam_plot
+
 
 def cov_delta_xij(xi,xj,joint_marginal_matrix):
     _,H1,H2 = between(xi,xj)
@@ -22,10 +20,12 @@ def between(p1,p2):
     H2 = np.eye(size)
     return result,H1,H2
 
+
 def inv_Q(Q):
     NOISE = gtsam.noiseModel_Gaussian.Covariance(Q)
     Q_inv = NOISE.information()
     return Q_inv
+
 
 def construct_SIFactor2(xi,xj,cov):
     measured = xi.between(xj)
@@ -40,7 +40,6 @@ def construct_SIFactor2(xi,xj,cov):
     # print(ti.shape[0])
 
 
-
     R_ij = measured.rotation().matrix()
     Jt = np.hstack([R_ij,np.zeros((dim,size-dim))])
 
@@ -49,7 +48,7 @@ def construct_SIFactor2(xi,xj,cov):
     J = np.block([[Jt],
                 [np.zeros((size-dim,dim)),np.eye(size-dim)]])
     #print(J)
-    
+
     Q = Jt @ cov @ Jt.T
     Q_inv = inv_Q(Q)
 
@@ -66,7 +65,7 @@ def construct_SIFactor2(xi,xj,cov):
     eigenValues, eigenVectors = np.linalg.eig(Ht)
     #print('eigen')
     #print(eigenVectors,eigenValues)
-    idx = eigenValues.argsort()[::-1]   
+    idx = eigenValues.argsort()[::-1]
     #print(idx)
     #eigenValues = eigenValues[idx]
     eigenVectors = eigenVectors[:,idx[:-1]]
@@ -75,12 +74,9 @@ def construct_SIFactor2(xi,xj,cov):
     Ht = Ht[0:dim-1,:]#*0.01
     #print(Ht)
 
-
-
     H = np.block([
         [Ht, np.zeros((Ht.shape[0],size-dim))],
-        [np.zeros((size-dim,Ht.shape[1])),np.eye(size-dim)]
-        ])
+        [np.zeros((size-dim,Ht.shape[1])),np.eye(size-dim)]])
 
     #print(H)
     print(measured)
@@ -105,7 +101,7 @@ def scale_pose(p,s):
     #print(p.translation())
     translation = p.translation().vector()
     rotation = p.rotation()
-    
+
     translation = T_trans(translation*s)
     #translation = T(translation)
     new_p = T_pose(r=rotation, t=translation)
@@ -177,15 +173,13 @@ if __name__ == '__main__':
 
     # test SI
 
-    
-
     #PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([1.6, 0.6, 0.001],dtype = np.float))
 
     p1 = result.atPose2(1)
     p2 = result.atPose2(2)
     p3 = result.atPose2(3)
 
-    
+
 
     marginals = gtsam.Marginals(graph, result)
 
@@ -230,7 +224,7 @@ if __name__ == '__main__':
     # x12 = between(p1,p2)
     # x23 = between(p2,p3)
     # x13 = between(p1,p3)
-    
+
     measured,noise,H=construct_SIFactor2(p1,p2,NOISE12)
     graph.add(gtsam.SIBetweenFactorPose2(1, 2, measured, noise, H))
 
@@ -240,7 +234,7 @@ if __name__ == '__main__':
     measured,noise,H=construct_SIFactor2(p1,p3,NOISE13)
     graph.add(gtsam.SIBetweenFactorPose2(1, 3, measured, noise, H))
 
-    
+
     #x12 = scale_pose(x12,scale)
 
     #print('test scale')
