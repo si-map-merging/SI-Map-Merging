@@ -46,7 +46,7 @@ if __name__ == "__main__":
     mtx_fpath = "adj.mtx"
     io.mmwrite(mtx_fpath, coo_adj_mat, field='integer', symmetry='symmetric')
 
-    print("inital lc:\n")
+    print("initial lc:\n")
     for i, edge in enumerate(adj.inter_lc_edges, 1):
         print("{}: {}".format(i, edge))
 
