@@ -3,12 +3,12 @@ from SIFactor import *
 
 class ScaleEstimation(object):
     """docstring for ScaleEstimation"""
-    def __init__(self, arg):
+    def __init__(self, lc_num):
         super(ScaleEstimation, self).__init__(lc_num)
         self.lc_num = lc_num
         self.history = []
 
-    def scale_estimate(xa_list,qa_list,xb_list,qb_list,z_list,qab_list,index_list):
+    def scale_estimate(self, xa_list, qa_list, xb_list, qb_list, z_list, qab_list, index_list):
         graph = gtsam.NonlinearFactorGraph()
 
         PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.1 0.1, 0.1],dtype = np.float))
