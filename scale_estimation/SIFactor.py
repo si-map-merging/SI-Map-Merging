@@ -20,8 +20,11 @@ def between(p1, p2):
     H2 = np.eye(size)
     return result,H1,H2
 
-def get_scale(x12,x23,x13):
+def get_scale(x,x_original,cov):
+
     
+
+    return s,var
     pass
 
 def inv_Q(Q):

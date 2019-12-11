@@ -8,10 +8,14 @@ class ScaleEstimation(object):
         self.lc_num = lc_num
         self.history = []
 
-    def scale_estimate(self, xa_list, qa_list, xb_list, qb_list, z_list, qab_list, index_list):
+    def scale_estimate(self, poses, covs, index_list):
+
+        xa_list, xb_list, z_list = poses
+        qa_list, qb_list, qab_list = covs
+
         graph = gtsam.NonlinearFactorGraph()
 
-        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.1 0.1, 0.1],dtype = np.float))
+        PRIOR_NOISE = gtsam.noiseModel_Diagonal.Sigmas(np.array([0.1, 0.1, 0.1],dtype = np.float))
         graph.add(gtsam.PriorFactorPose2(1, gtsam.Pose2(0.0, 0.0, 0.0), PRIOR_NOISE))
 
         graph.add(gtsam.BetweenFactorPose2(1, 2, xa_list[0], qa_list[0]))
