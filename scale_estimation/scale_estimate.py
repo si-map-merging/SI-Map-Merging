@@ -1,5 +1,5 @@
 import numpy as np
-from SIFactor import *
+from .SIFactor import *
 
 class ScaleEstimation(object):
     """docstring for ScaleEstimation"""
@@ -10,8 +10,8 @@ class ScaleEstimation(object):
 
     def get_reletive_pose(self, i , j):
 
-        pi = result.atPose2(i)
-        pj = result.atPose2(j)
+        pi = self.result.atPose2(i)
+        pj = self.result.atPose2(j)
         key_vec = gtsam.gtsam.KeyVector()
         key_vec.push_back(i)
         key_vec.push_back(j)
@@ -64,7 +64,7 @@ class ScaleEstimation(object):
         optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial_estimate, params)
         result = optimizer.optimize()
 
-
+        self.result = result
         self.marginals = gtsam.Marginals(graph, result)
 
         x45,noise45 = self.get_reletive_pose(4,5)
