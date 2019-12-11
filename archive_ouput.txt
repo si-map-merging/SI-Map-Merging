@@ -27291,3 +27291,1270 @@ i: 4, j: 9, k: 12
 =============
 True
 i: 4, j: 9, k: 13
+0.43535360163650255
+0.0875031737533432
+=============
+True
+i: 4, j: 9, k: 14
+3.3718477235636004
+1.9598428379298682
+=============
+True
+i: 4, j: 10, k: 11
+0.0758710388855958
+0.00526902718833533
+=============
+True
+i: 4, j: 10, k: 12
+0.634509024579516
+0.269592482906962
+=============
+True
+i: 4, j: 10, k: 13
+0.4265013990075164
+0.5378999863619464
+=============
+True
+i: 4, j: 10, k: 14
+1.940912537186778
+14.506176090647276
+=============
+True
+i: 4, j: 11, k: 12
+1.0593575958718306
+0.8229012520476147
+=============
+True
+i: 4, j: 11, k: 13
+0.421622909843527
+0.19562855476104768
+=============
+True
+i: 4, j: 11, k: 14
+0.5522649988309793
+0.5406082547304412
+=============
+True
+i: 4, j: 12, k: 13
+0.4127931761438231
+0.059823789066087554
+=============
+True
+i: 4, j: 12, k: 14
+0.753484633864364
+0.4408889634814484
+=============
+True
+i: 4, j: 13, k: 14
+0.029777269112634577
+0.006034596507923941
+=============
+True
+i: 5, j: 6, k: 7
+0.3028033680073055
+0.36306984024514943
+=============
+True
+i: 5, j: 6, k: 8
+1.6518819436904169
+1.6764446222200418
+=============
+True
+i: 5, j: 6, k: 9
+1.2607172278563046
+2.145359156669712
+=============
+True
+i: 5, j: 6, k: 10
+0.9587505852824493
+0.7768534143992606
+=============
+True
+i: 5, j: 6, k: 11
+1.6561837163645823
+3.7083590629681327
+=============
+True
+i: 5, j: 6, k: 12
+0.2407347264059668
+0.01938739393821029
+=============
+True
+i: 5, j: 6, k: 13
+0.0657640508683233
+0.0358034218382109
+=============
+True
+i: 5, j: 6, k: 14
+0.4905745350588727
+0.20362745873092072
+=============
+True
+i: 5, j: 7, k: 8
+0.5077217349786856
+0.3224891423866389
+=============
+True
+i: 5, j: 7, k: 9
+0.4309631659469794
+0.21201566078283735
+=============
+True
+i: 5, j: 7, k: 10
+1.3053486026249825
+3.2162089652941668
+=============
+True
+i: 5, j: 7, k: 11
+0.07395957236835343
+0.15530757571899936
+=============
+True
+i: 5, j: 7, k: 12
+0.54359801079756
+0.6032327920200821
+=============
+True
+i: 5, j: 7, k: 13
+0.33166351756436224
+0.5849558968195332
+=============
+True
+i: 5, j: 7, k: 14
+0.11590969026901017
+0.08482279186970818
+=============
+True
+i: 5, j: 8, k: 9
+0.5021689876944013
+0.2593479196669547
+=============
+True
+i: 5, j: 8, k: 10
+3.085053398591391
+5.648933134405059
+=============
+True
+i: 5, j: 8, k: 11
+4.028911616839781
+69.58043387350632
+=============
+True
+i: 5, j: 8, k: 12
+0.4936210320229957
+0.837042399875744
+=============
+True
+i: 5, j: 8, k: 13
+0.5193490028339925
+0.4549387635172342
+=============
+True
+i: 5, j: 8, k: 14
+0.5185131139427902
+0.2253899359607625
+=============
+True
+i: 5, j: 9, k: 10
+1.1125777106161725
+1.171761095837825
+=============
+True
+i: 5, j: 9, k: 11
+1.2660695699983826
+9.558502364863221
+=============
+True
+i: 5, j: 9, k: 12
+0.056138299410861126
+0.019932502100837402
+=============
+True
+i: 5, j: 9, k: 13
+0.04649397601919839
+0.14595172642751797
+=============
+True
+i: 5, j: 9, k: 14
+0.527727087296472
+1.0590910511795018
+=============
+True
+i: 5, j: 10, k: 11
+2.480174939797955
+5.424129280468891
+=============
+True
+i: 5, j: 10, k: 12
+0.30813316917401345
+0.18351533720569616
+=============
+True
+i: 5, j: 10, k: 13
+1.243874150966413
+1.6307154763647305
+=============
+True
+i: 5, j: 10, k: 14
+8.268807433663712
+115.33447195227488
+=============
+True
+i: 5, j: 11, k: 12
+0.22721471104744773
+0.13732963317703165
+=============
+True
+i: 5, j: 11, k: 13
+0.14156615835957026
+14.53174082617785
+=============
+True
+i: 5, j: 11, k: 14
+0.5079249961829357
+0.19326010278147235
+=============
+True
+i: 5, j: 12, k: 13
+0.03966780648900402
+0.00960624560215438
+=============
+True
+i: 5, j: 12, k: 14
+1.4500163782943996
+10.510336641176387
+=============
+True
+i: 5, j: 13, k: 14
+0.09641654630033782
+52.3439349003741
+=============
+True
+i: 6, j: 7, k: 8
+0.7843018203276336
+0.1340716377117701
+=============
+True
+i: 6, j: 7, k: 9
+0.47067393479106767
+0.0343284405103805
+=============
+True
+i: 6, j: 7, k: 10
+0.501522958223761
+0.08946794853164557
+=============
+True
+i: 6, j: 7, k: 11
+0.46843616589302955
+0.07133901683227535
+=============
+True
+i: 6, j: 7, k: 12
+0.21205260921415864
+0.011598719323893754
+=============
+True
+i: 6, j: 7, k: 13
+0.6713047919630731
+0.07490162542979231
+=============
+True
+i: 6, j: 7, k: 14
+0.6158317303853064
+0.05554233249382629
+=============
+True
+i: 6, j: 8, k: 9
+0.5369154254176797
+0.5280926308528435
+=============
+True
+i: 6, j: 8, k: 10
+0.42389456008372006
+0.008339208831505334
+=============
+True
+i: 6, j: 8, k: 11
+1.2823614568590052
+11.75263317390322
+=============
+True
+i: 6, j: 8, k: 12
+0.453286487836132
+3.730972813415078
+=============
+True
+i: 6, j: 8, k: 13
+0.6099530073208373
+0.51720225631917
+=============
+True
+i: 6, j: 8, k: 14
+1.3677825147793592
+6.189084546539383
+=============
+True
+i: 6, j: 9, k: 10
+0.8996442979989899
+2.597220297077348
+=============
+True
+i: 6, j: 9, k: 11
+0.5206261029233775
+0.5139712777391321
+=============
+True
+i: 6, j: 9, k: 12
+0.5387025218584605
+1.7493260998750706
+=============
+True
+i: 6, j: 9, k: 13
+0.4863480065145585
+0.2976973708755281
+=============
+True
+i: 6, j: 9, k: 14
+0.5810532026814254
+1.8440349727134897
+=============
+True
+i: 6, j: 10, k: 11
+0.2530776822180933
+0.23319171507095804
+=============
+True
+i: 6, j: 10, k: 12
+0.14800835149335193
+0.00702076702799104
+=============
+True
+i: 6, j: 10, k: 13
+1.0631683323994705
+2.4974465732362443
+=============
+True
+i: 6, j: 10, k: 14
+0.22212050859018778
+0.5664309420289322
+=============
+True
+i: 6, j: 11, k: 12
+0.5056333657881341
+2.0222127180565748
+=============
+True
+i: 6, j: 11, k: 13
+0.4572036688652612
+0.28857541052354024
+=============
+True
+i: 6, j: 11, k: 14
+0.3792789661043293
+0.22436009433140147
+=============
+True
+i: 6, j: 12, k: 13
+0.60469218149533
+0.38732464032965974
+=============
+True
+i: 6, j: 12, k: 14
+0.13588141780312413
+0.005362726327171432
+=============
+True
+i: 6, j: 13, k: 14
+0.5256957099837996
+0.2879532854881565
+=============
+True
+i: 7, j: 8, k: 9
+0.6196405597564196
+0.2799279280979543
+=============
+True
+i: 7, j: 8, k: 10
+0.34873047640200894
+0.11514854660783763
+=============
+True
+i: 7, j: 8, k: 11
+0.45124528619118925
+0.6841204844769487
+=============
+True
+i: 7, j: 8, k: 12
+0.7611785376313622
+1.0845766492117914
+=============
+True
+i: 7, j: 8, k: 13
+0.5221900882704752
+0.47651805798508556
+=============
+True
+i: 7, j: 8, k: 14
+0.3895611346960599
+0.5235038840013784
+=============
+True
+i: 7, j: 9, k: 10
+0.7370769561309156
+0.5346828115981636
+=============
+True
+i: 7, j: 9, k: 11
+0.5054725673267146
+0.1909428413630137
+=============
+True
+i: 7, j: 9, k: 12
+1.6157106578365532
+5.958813920123684
+=============
+True
+i: 7, j: 9, k: 13
+0.17070614781102286
+0.3272344188666146
+=============
+True
+i: 7, j: 9, k: 14
+0.6669512150847422
+0.5213112007537968
+=============
+True
+i: 7, j: 10, k: 11
+27.39012223308786
+1310.265429886868
+=============
+True
+i: 7, j: 10, k: 12
+1.0994150397943898
+5.376448243070108
+=============
+True
+i: 7, j: 10, k: 13
+0.6081630280700676
+1.7633482817242734
+=============
+True
+i: 7, j: 10, k: 14
+2.1982170290638403
+4.588297987552625
+=============
+True
+i: 7, j: 11, k: 12
+0.7198573808377375
+1.4053283507500711
+=============
+True
+i: 7, j: 11, k: 13
+0.6734546231638263
+26.06389240851006
+=============
+True
+i: 7, j: 11, k: 14
+0.40392482182023437
+0.31520501142156465
+=============
+True
+i: 7, j: 12, k: 13
+0.4566908061279598
+0.46986196225612475
+=============
+True
+i: 7, j: 12, k: 14
+1.4977104377277222
+1.6100700699761206
+=============
+True
+i: 7, j: 13, k: 14
+0.2561981423927421
+0.090824027938642
+=============
+True
+i: 8, j: 9, k: 10
+0.47655552787652994
+0.01869647008911494
+=============
+True
+i: 8, j: 9, k: 11
+0.21332112770990108
+0.03250633747174221
+=============
+True
+i: 8, j: 9, k: 12
+0.5888143435790675
+5.520434472574474
+=============
+True
+i: 8, j: 9, k: 13
+0.3354239169885541
+1.065708261658085
+=============
+True
+i: 8, j: 9, k: 14
+0.4197826813092764
+0.14488582535851685
+=============
+True
+i: 8, j: 10, k: 11
+0.1493495651633499
+0.0011086002496592078
+=============
+True
+i: 8, j: 10, k: 12
+0.326072865593063
+0.0066855174816025376
+=============
+True
+i: 8, j: 10, k: 13
+1.084296392970781
+0.040410591965116746
+=============
+True
+i: 8, j: 10, k: 14
+0.6334989976772211
+0.014376921277897078
+=============
+True
+i: 8, j: 11, k: 12
+1.4398002614306127
+15.217428761977203
+=============
+True
+i: 8, j: 11, k: 13
+0.5188564274335522
+1.7253973966961358
+=============
+True
+i: 8, j: 11, k: 14
+0.1912805613188965
+0.01650655602350907
+=============
+True
+i: 8, j: 12, k: 13
+0.6218046242028477
+6.5093520205553155
+=============
+True
+i: 8, j: 12, k: 14
+4.057652406902969
+55.82590159901096
+=============
+True
+i: 8, j: 13, k: 14
+0.714864144540689
+0.9739407739257265
+=============
+True
+i: 9, j: 10, k: 11
+2.302736465643173
+3.1141650458516454
+=============
+True
+i: 9, j: 10, k: 12
+1.6666070558006456
+36.93805691211582
+=============
+True
+i: 9, j: 10, k: 13
+1.4490439552975345
+6.653598461724357
+=============
+True
+i: 9, j: 10, k: 14
+0.5980198351739051
+0.8554675590868887
+=============
+True
+i: 9, j: 11, k: 12
+0.5259734899530012
+0.23873542451392996
+=============
+True
+i: 9, j: 11, k: 13
+0.5343111765360318
+0.24116224632039918
+=============
+True
+i: 9, j: 11, k: 14
+0.6048298379949166
+0.49513542666488713
+=============
+True
+i: 9, j: 12, k: 13
+0.6771886517812654
+1.7859580789814264
+=============
+True
+i: 9, j: 12, k: 14
+0.48935795889244327
+0.3386281322357562
+=============
+True
+i: 9, j: 13, k: 14
+0.6312024841165659
+2.0821204320224154
+=============
+True
+i: 10, j: 11, k: 12
+2.262715100559837
+50.96294588697233
+=============
+True
+i: 10, j: 11, k: 13
+0.628431782718173
+2.7713056143757595
+=============
+True
+i: 10, j: 11, k: 14
+1.5729206124967812
+0.8660975948348358
+=============
+True
+i: 10, j: 12, k: 13
+0.20671414556397183
+0.09154744612669607
+=============
+True
+i: 10, j: 12, k: 14
+0.2065885956627874
+0.18288274694105916
+=============
+True
+i: 10, j: 13, k: 14
+0.9889087986245203
+41.782972621643104
+=============
+True
+i: 11, j: 12, k: 13
+0.4842997841773079
+0.3374808159036917
+=============
+True
+i: 11, j: 12, k: 14
+0.2136502960236944
+0.007784903256657884
+=============
+True
+i: 11, j: 13, k: 14
+0.2901334325069952
+0.06211044954179956
+=============
+True
+i: 12, j: 13, k: 14
+0.3638155004676166
+0.45333693730962193
+=============
+estemated_sb 0.4951850891009104 record
+sb: 0.4951850891009104
+lc norms: [0.007193868030413174, 0.1536023686437773, 0.00586426540279697, 0.11514685550305381, 0.02389905632226567, 0.0253431439132208, 0.35298677158710956, 0.006614507756686689, 0.13540915120549682, 0.12362983981910072, 0.007303396550453781, 0.004151874581540986, 0.005026304106247145, 0.004373660922563766, 0.10640296977859252, 0.09178886821776301, 10.01246198804935, 9.86005025899298, 0.915796761851135, 25.308076862219064, 15.885355909258202, 0.5848469736272435, 0.6189859974484371, 0.5595515795166578, 0.5106553182032179, 0.5551601353849785, 0.7990724090281055, 1.1220187372346242, 0.3157818725683516, 0.49187715339569316]
+=========== 2D Single Graphs Optimization ==============
+initial error = 5091.325008402527
+final error = 29.493185925383504
+initial error = 28235.990986900633
+final error = 24.087745492940076
+The size of adjacency matrix is: 
+(30, 30)
+initial lc:
+
+1: 563 1891 -0.007133284214853952 0.0009316617138833952 1.57771 [314.5409549948739, 0.0, 0.0, 314.5409549948739, 0.0, 44.72135955] False
+2: 1545 2236 0.15359175257833677 -0.0018058773197085602 3.16023 [1835.175470833484, 0.0, 0.0, 1835.175470833484, 0.0, 44.72135955] False
+3: 1727 2055 -0.005720203480513808 -0.0012918517159330766 -1.58519 [804.6018716131052, 0.0, 0.0, 804.6018716131052, 0.0, 44.72135955] False
+4: 36 2619 -0.11511553242762068 -0.0026856146682952093 -0.0140643 [3826.3371091756344, 0.0, 0.0, 3826.3371091756344, 0.0, 44.72135955] False
+5: 1484 1789 0.02389873016993553 -0.00012485735637041774 -0.00674024 [75466.13799342533, 0.0, 0.0, 75466.13799342533, 0.0, 44.72135955] False
+6: 1682 2210 0.016787712376871683 -0.01898545908208832 0.00464675 [122.06419702516777, 0.0, 0.0, 122.06419702516777, 0.0, 44.72135955] False
+7: 1742 1776 0.24527763886477702 0.25384747544226294 1.56066 [721.0066372144804, 0.0, 0.0, 721.0066372144804, 0.0, 44.72135955] False
+8: 1679 2199 0.0038601927747227427 0.00537127774419148 -0.0257984 [318.8936200228391, 0.0, 0.0, 318.8936200228391, 0.0, 44.72135955] False
+9: 4 2763 -0.13539498513531825 0.0019586297251013942 0.00932687 [2508.0393880731253, 0.0, 0.0, 2508.0393880731253, 0.0, 44.72135955] False
+10: 1259 1869 0.001570925428024831 -0.12361985878893443 4.70831 [11724.232364843772, 0.0, 0.0, 11724.232364843772, 0.0, 44.72135955] False
+11: 17 2805 -0.0037539801250198288 0.00626476131980591 3.15943 [1175.300273641827, 0.0, 0.0, 1175.300273641827, 0.0, 44.72135955] False
+12: 596 1916 -0.002307965531313073 -0.003451283478231961 -0.00785879 [5752.012038527595, 0.0, 0.0, 5752.012038527595, 0.0, 44.72135955] False
+13: 1722 1810 -0.002895880736697592 0.004108236571486692 0.000435444 [1523.8884419141966, 0.0, 0.0, 1523.8884419141966, 0.0, 44.72135955] False
+14: 1619 2203 -3.619998144320581e-06 -0.004373659424460799 3.15705 [3001.9840570576416, 0.0, 0.0, 3001.9840570576416, 0.0, 44.72135955] False
+15: 415 1909 0.10640029434447813 -0.000754546958440934 3.18107 [16406.51682765626, 0.0, 0.0, 16406.51682765626, 0.0, 44.72135955] False
+16: 64 3307 0.08095749741419253 0.04325598156473708 -2.7335505808318925 [68773.43226543152, 0.0, 0.0, 68773.43226543152, 0.0, 44.44444444444444] True
+17: 1747 2862 1.1976189208622603 -9.940578654310114 0.4792294191681077 [2474.494089820931, 0.0, 0.0, 2474.494089820931, 0.0, 44.44444444444444] True
+18: 220 2830 -7.711006122839922 6.144995987256033 -1.155575888011479 [1383.541303265155, 0.0, 0.0, 1383.541303265155, 0.0, 44.44444444444444] True
+19: 847 2437 0.8063421114755301 0.4341613850611407 -2.7190556026324697 [747.1627174488947, 0.0, 0.0, 747.1627174488947, 0.0, 44.44444444444444] True
+20: 576 2942 12.432527994528483 -22.043842726014304 -0.7578216026324697 [511.7559120640658, 0.0, 0.0, 511.7559120640658, 0.0, 44.44444444444444] True
+21: 684 3429 12.54588004180369 -9.743994372970272 -0.3998162954528832 [1247.8710852147601, 0.0, 0.0, 1247.8710852147601, 0.0, 44.44444444444444] True
+22: 131 1787 -0.48304713831742757 -0.3297141864164926 2.297796862716942 [1715.5344093978283, 0.0, 0.0, 1715.5344093978283, 0.0, 44.44444444444444] True
+23: 1636 3252 -0.48289200495144646 -0.3872453700061613 2.4292011863237506 [1518.1442323922674, 0.0, 0.0, 1518.1442323922674, 0.0, 44.44444444444444] True
+24: 585 2933 -0.4052930105469898 -0.3857921017093847 2.3493054842146535 [1996.0725170448402, 0.0, 0.0, 1996.0725170448402, 0.0, 44.44444444444444] True
+25: 632 3434 -0.412984988286419 -0.30035354743917386 2.405912426105209 [2235.9560475443864, 0.0, 0.0, 2235.9560475443864, 0.0, 44.44444444444444] True
+26: 419 3348 -0.39067740473299467 -0.39442862643545484 2.368784753912986 [1686.1040829154817, 0.0, 0.0, 1686.1040829154817, 0.0, 44.44444444444444] True
+27: 1541 2336 -0.573923686659994 -0.5559930905691014 2.759279668303954 [964.0836140112307, 0.0, 0.0, 964.0836140112307, 0.0, 44.44444444444444] True
+28: 1081 2595 -0.8094262884714284 -0.777016814642353 2.476657900214161 [437.29091749299266, 0.0, 0.0, 437.29091749299266, 0.0, 44.44444444444444] True
+29: 147 2551 -0.24124716154530046 -0.2037596576585031 2.3198419397768326 [5331.943492561719, 0.0, 0.0, 5331.943492561719, 0.0, 44.44444444444444] True
+30: 52 3408 -0.38812993271272545 -0.3021560678938377 2.535341280098844 [2382.653560979282, 0.0, 0.0, 2382.653560979282, 0.0, 44.44444444444444] True
+# trusted lc: 8
+[1, 4, 5, 6, 8, 9, 12, 13]
+TPR: 0.5333333333333333 record
+TNR: 1.0 record
+===== Multi-Robot Optimization =====
+initial error = 74327.75053274425
+final error = 55.91060103143513
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  1.5459217218203485 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  0.8861769489377135 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  1.1864175534360395 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  1.9804396618727336 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  1.2224811688543284 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  1.6867321072388957 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  1.9748248163642865 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 15
+real_sb  0.6219875377553394 record
+outlier_rate 0.5 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.8738025308725283 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  0.9242273847534295 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.2722905682467425 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.2309841502422805 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.121185430193563 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.3931451570528843 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.4655748990678523 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.412039156688261 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.3126554474133216 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.2195458657801372 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.1492865032992228 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.419050951874165 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  0.6921818970482765 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.5413853307834513 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  0.8045518783997276 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.6515463347024215 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.82864915771004 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  0.9168346800010932 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  0.8781795020845404 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
+
+new_experiments
+========== Input g2o Graph Summary ================
+# Nodes: 3500
+# Odometry edges: 3499
+# Loop closure edges: 1954
+========== Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 12
+real_sb  1.795115212350796 record
+outlier_rate 0.6 record
+========== Noisy Multi Robot g2o Graph Summary ================
+# Robots: 2
+# Nodes: 1750 1750
+# Odoms: 1749 1749
+# Intra loop closures: 831 725
+# Inter loop closures: 30
