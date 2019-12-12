@@ -3,8 +3,6 @@ GTSAM Optimization
 """
 import numpy as np
 import gtsam
-# from .SIFactor import compound_pose, construct_SIFactor2
-
 
 
 def vector3(x, y, z):
@@ -140,7 +138,7 @@ class Graph2D(Graph):
         edge1.i = 1
         edge1.j = 2
         edge2.i = 2
-        edge2.j = 3 
+        edge2.j = 3
         ...
         '''
         gtsam_graph = self.graph

@@ -1,7 +1,7 @@
 # Optimize graph with GTSAM
 
 ## Requirements
-* Install GTSAM as in: <https://github.com/borglab/gtsam>
+* Install custom GTSAM
 * Install GTSAM python per instruction in its `cython` folder
 ------------------------------------------------
 ## Python Usage
@@ -21,5 +21,3 @@
    * `./OptimizeG2o input.g2o output.g2o`
 
      This will optimize the input graph, and output it as `output.g2o`.
-
-     (Note) It does not perform well on city10000 dataset.
