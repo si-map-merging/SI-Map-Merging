@@ -30,14 +30,6 @@ def between(p1,p2):
     H2 = np.eye(size)
     return result,H1,H2
 
-# Pose3 result = inverse() * p2;
-#   if (H1)
-#     *H1 = -result.inverse().AdjointMap();
-#   if (H2)
-#     *H2 = I6;
-#   return result;
-
-# -result.inverse().AdjointMap();
 
 _,H1,H2 = between(T11,T12)
 print(np.hstack([H1,H2]))

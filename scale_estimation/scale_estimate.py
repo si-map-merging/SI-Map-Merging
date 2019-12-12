@@ -3,7 +3,8 @@ from .SIFactor import *
 from .adaptive_voting import *
 
 class ScaleEstimation(object):
-    """docstring for ScaleEstimation"""
+    """Scale Estimator
+    """
     def __init__(self, lc_num):
 
         self.lc_num = lc_num
@@ -123,16 +124,8 @@ class ScaleEstimation(object):
         sb = adaptive_voting(self.sb_list,self.sb_std_list,c)
         print('estemated_sb',sb,'record')
         return sb
-        pass
 
     def estimate_lc(self,c=1):
         for i in range(self.lc_num):
             self.lc_result[i]=adaptive_voting(self.lc_list[i],self.lc_std_list[i],c)
         return self.lc_result
-
-        # self.history
-
-
-
-
-

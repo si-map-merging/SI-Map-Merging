@@ -1,8 +1,9 @@
-import numpy as np
-
 """
 Implementation of algorithm 2 in TEASER paper
 """
+
+import numpy as np
+
 
 def f(s,a,s_hat,c):
     K=len(s)
@@ -50,7 +51,6 @@ def adaptive_voting(s,a,c):
         if S[i]:
             ww=0.
             ss = 0.
-            # print S[i]
             for k in S[i]:
                 ww+=1./(a[k]**2)
                 ss+=s[k]/(a[k]**2)
@@ -60,7 +60,6 @@ def adaptive_voting(s,a,c):
             s_est = m[i]
             f_list.append((s_est,f(s,a,s_est,c)))
 
-    #print f_list
     f_list  = sorted(f_list, key=lambda s:s[1])
     return f_list[0][0]
 
