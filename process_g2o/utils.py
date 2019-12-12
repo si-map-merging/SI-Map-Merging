@@ -134,7 +134,7 @@ class Node2D:
         id_: node id
         x: x position
         y: y position
-        theta: angle (TODO: confirm angle is from x-axis)
+        theta: angle
     """
     def __init__(self, id_, x, y, theta):
         self.id_ = id_
@@ -688,8 +688,6 @@ class MultiRobotGraph2D(MultiRobotGraph):
     """
     def add_random_inter_lc(self, N=20):
         """Add randomly generated inter loop closures
-
-        TODO: Specify noise values, rather than hard-coded
         """
         x_mu = random.uniform(-5, 5)
         x_sigma = 0.15
@@ -836,8 +834,6 @@ class MultiRobotGraph3D(MultiRobotGraph):
 
     def add_random_inter_lc(self, N=20):
         """Add randomly generated inter loop closures
-
-        TODO: Specify noise values, rather than hard-coded
         """
         # Random translation specification
         t_mu = [random.uniform(-5, 5) for _ in range(3)]

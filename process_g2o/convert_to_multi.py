@@ -3,10 +3,10 @@
 Example usages:
   $ python3 convert_to_multi.py input.g2o output.g2o
 """
-
 import argparse
 from utils import SingleRobotGraph2D, SingleRobotGraph3D
 import numpy as np
+
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -18,9 +18,8 @@ if __name__ == "__main__":
                         nargs='?', default="output.g2o",
                         help="output g2o file path")
     parser.add_argument("--3D", dest="is_3D", action="store_true", help="whether input is 3D")
-    parser.add_argument("--max_inter_lc",default=5,type=int,help="max_inter_lc")
-    parser.add_argument("--random_inter_lc",default=5,type=int,help="random_inter_lc")
-    # parser.add_argument("--sb",default=5,type=int,help="random_inter_lc")
+    parser.add_argument("--max_inter_lc",default=6,type=int,help="max_inter_lc")
+    parser.add_argument("--random_inter_lc",default=18,type=int,help="random_inter_lc")
     args = parser.parse_args()
 
     # Construct graph from g2o file
@@ -40,7 +39,7 @@ if __name__ == "__main__":
     if not args.is_3D:
       aliasing_lc = [2,3]
       multi_graph.add_perceptual_aliasing_lc(aliasing_lc[0], aliasing_lc[1])
-      sb = np.random.uniform(0.5,2)
+      sb = np.random.uniform(0.5, 2)
       multi_graph.vary_scale(sb)
       print('real_sb ',sb, 'record')
     multi_graph.add_random_inter_lc(N=args.random_inter_lc)
