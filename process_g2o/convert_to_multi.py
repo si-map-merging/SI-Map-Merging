@@ -19,7 +19,7 @@ if __name__ == "__main__":
                         help="output g2o file path")
     parser.add_argument("--3D", dest="is_3D", action="store_true", help="whether input is 3D")
     parser.add_argument("--max_inter_lc",default=6,type=int,help="max_inter_lc")
-    parser.add_argument("--random_inter_lc",default=18,type=int,help="random_inter_lc")
+    parser.add_argument("--random_inter_lc",default=3,type=int,help="random_inter_lc")
     args = parser.parse_args()
 
     # Construct graph from g2o file
