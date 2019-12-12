@@ -413,14 +413,8 @@ class AdjacencyMatrix:
             # Assemble values
             poses = [[x_a_ij, x_a_jk, x_a_ik], [x_b_ij, x_b_jk, x_b_ik], z_values]
             covs = [[Q_a_ij, Q_a_jk, Q_a_ik], [Q_b_ij, Q_b_jk, Q_b_ik], Q_z_values]
-            # self.scale_estimator.scale_estimate(poses, covs, indices)
-            sb,sb_std,l_list,l_std_list = self.scale_estimator.scale_estimate(poses, covs, indices)
-            if (not edge1.is_outlier and not edge2.is_outlier and not edge3.is_outlier):
-                print("True")
-                print("i: {}, j: {}, k: {}".format(i, j, k))
-                print(sb)
-                print(sb_std)
-                print("=============")
+            self.scale_estimator.scale_estimate(poses, covs, indices)
+
 
     def correct_for_scale(self):
         """Get the estimated scales, and correct the graph for these scales
@@ -430,9 +424,6 @@ class AdjacencyMatrix:
         # lc_scales = [1]*self.inter_lc_n
         s_b = self.scale_estimator.estimate_sb()
         lc_norms = self.scale_estimator.estimate_lc()
-
-        print("sb: {}".format(s_b))
-        print("lc norms: {}".format(lc_norms))
 
         # Correct for robot b scale
         self.graph.scale_robot_b( 1.0/s_b )

@@ -1,3 +1,4 @@
+# Script for testing multi-robot optimization
 cd process_g2o
 python3 convert_to_multi.py ../datasets/manhattanOlson3500.g2o
 cd ..
